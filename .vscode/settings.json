@@ -1,0 +1,14 @@
+{
+  "eslint.workingDirectories": ["./"],
+  "eslint.nodePath": "./node_modules",
+  "eslint.options": {
+    "overrideConfigFile": "./eslint.config.js" // Use 'overrideConfigFile' instead of 'configFile'
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact"
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

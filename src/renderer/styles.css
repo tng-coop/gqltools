@@ -1,0 +1,12 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f7f7f7;
+}
+
+h1,
+h2 {
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+}

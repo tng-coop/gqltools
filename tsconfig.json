@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext", // Use ESNext for main and renderer processes
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": ["src/**/*.ts", "src/declarations.d.ts"],
+  "exclude": ["node_modules", "dist"],
+  "overrides": [
+    {
+      "files": ["src/preload.ts"], // Only apply these settings to preload.ts
+      "compilerOptions": {
+        "module": "commonjs" // Compile preload.ts to CommonJS
+      }
+    }
+  ]
+}

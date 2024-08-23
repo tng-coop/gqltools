@@ -1,0 +1,14 @@
+{
+  "proxyServers": [
+    {
+      "port": 8080,
+      "description": "First proxy server",
+      "blockedUrls": ["127.0.0.1"]
+    },
+    {
+      "port": 8081,
+      "description": "Second proxy server",
+      "blockedUrls": ["127.0.0.1"]
+    }
+  ]
+}

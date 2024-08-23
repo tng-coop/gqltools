@@ -1,0 +1,49 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Use the latest version of checkout action
+
+      - name: Set up Node.js (latest version)
+        uses: actions/setup-node@v4  # Use the latest version of setup-node action
+        with:
+          node-version: '18.x'  # Use the latest stable Node.js version
+
+      - name: Install dependencies
+        run: npm ci  # Clean install of dependencies
+
+      - name: Install Chromium only
+        run: npx playwright install chromium  # Install only Chromium browser binaries
+
+
+      # Start Xvfb to run Electron in a virtual display
+      - name: Start Xvfb
+        run: |
+          Xvfb :99 &  # Start Xvfb in the background
+          export DISPLAY=:99  # Set the DISPLAY environment variable
+
+
+      # Start your Electron app and run Playwright tests
+      - name: Run Playwright Tests (Chromium)
+        run: |
+          export DISPLAY=:99  # Ensure Playwright uses the virtual display
+          npm run test # Adjust this if you use a different command to run your Electron app tests
+
+      - name: Upload Playwright Test Results
+        if: failure()  # Upload test artifacts if tests fail
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report/

@@ -1,0 +1,20 @@
+{
+  "proxyServers": [
+    {
+      "port": 8080,
+      "description": "First proxy server",
+      "blockedUrls": [
+        "^https://example\\.com.*$",
+        "^https://.*\\.blockedsite\\.com$"
+      ]
+    },
+    {
+      "port": 8081,
+      "description": "Second proxy server",
+      "blockedUrls": [
+        "^https://yetanotherblockedsite\\.com$",
+        "^https://subdomain\\.blockedsite\\.com/.*$"
+      ]
+    }
+  ]
+}

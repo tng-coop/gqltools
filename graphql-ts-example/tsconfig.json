@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json", // Extend the parent config
+  "compilerOptions": {
+    "rootDir": ".", // Set the root directory for this config
+    "outDir": "../dist" // Output directory for compiled files
+  },
+  "include": [
+    "*.ts", // Include all TypeScript files in this directory
+    "queries/**/*.gql", // Include .gql files if they are in specific folders
+    "mutations/**/*.gql" // Include .gql files in mutations folder
+  ],
+  "exclude": [
+    "node_modules", // Exclude node_modules directory
+    "dist" // Exclude dist directory
+  ]
+}
