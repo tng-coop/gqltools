@@ -1,3 +1,10 @@
+# Overview
+
+This tool is a desktop application that monitors and displays GraphQL requests and responses. It takes the form of a proxy server between your client and server. The app captures all GraphQL requests and responses, allowing you to filter and view specific requests based on keywords, ports, or other criteria.
+
+In addition, the app provides a feature to block specific URLs or ports, allowing you to simulate network conditions where certain requests are blocked. This can be useful for testing how your app behaves when certain requests are unavailable.
+
+
 # Usage
 
 To use this tool, follow the steps below:
@@ -14,10 +21,10 @@ To use this tool, follow the steps below:
    - Users can use this to find specific requests, such as those matching a certain operation name like "GetUsers."
 
 2. **Request/Response Toggles**:
-   - Checkboxes allow users to selectively display only requests, only responses, or both. By default, both are checked.
+   - Checkboxes allow users to selectively filter only requests, only responses, or both. By default, both are checked.
    - Example:
-     - **Request Toggle**: Shows only GraphQL requests.
-     - **Response Toggle**: Shows only GraphQL responses.
+     - **Request Toggle**: Filters only GraphQL requests.
+     - **Response Toggle**: Filters only GraphQL responses.
 
 3. **Port Filters (8080, 8081)**:
    - Users can filter requests based on which server port the request was sent to.
@@ -57,7 +64,7 @@ To use this tool, follow the steps below:
 
 # Blocking Specific URLs or Ports
 
-You can configure the app to block certain URLs or ports, preventing data from those sources from being displayed. This feature is especially useful for excluding irrelevant or sensitive traffic from being shown in the monitor.
+You can configure the app to block certain URLs or ports, preventing the app under development from making requests to specific addresses. This feature is useful for testing how your app behaves when certain requests are blocked.
 
 ## Steps to Block URLs/Ports:
 
