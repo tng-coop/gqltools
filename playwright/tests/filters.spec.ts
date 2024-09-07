@@ -48,8 +48,7 @@ test.afterAll(async () => {
 });
 
 test.beforeEach(async () => {
-  const filterInput = window.getByPlaceholder("Enter your filter tag");
-  await filterInput.fill(""); // Apply 'GetUsers' filter
+  await window.getByPlaceholder("Enter your filter tag").fill("");
   await window.getByLabel("Regex").setChecked(false);
   await window.getByLabel("Request").setChecked(true);
   await window.getByLabel("Response").setChecked(true);
@@ -103,6 +102,41 @@ test("verify initial data loading", async () => {
 
 test("verify default view displays all data", async () => {
   await expect(window.locator("graphql-row")).toHaveCount(6); // Adjust based on your data
+});
+
+test("popups work JWT", async () => {
+  await expect(window.locator("graphql-row")).toHaveCount(6); // Adjust based on your data
+  await window.getByTestId('jwt-container').nth(0).click()
+  // Use Electron's clipboard module to check the clipboard content
+  const clipboardText = await electronApp.evaluate(({ clipboard }) => {
+    return clipboard.readText();
+  })
+  expect(clipboardText).toContain("Bearer eyJ")
+});
+
+test("popups work request", async () => {
+  await window.getByPlaceholder("Enter your filter tag").fill("CreateUser");
+  await expect(window.locator("graphql-row")).toHaveCount(2); // Adjust based on your data
+  await expect(window.getByText('mutation CreateUser')).toHaveCount(0)
+  await window.getByTestId('request-box').nth(0).click()
+  // Use Electron's clipboard module to check the clipboard content
+  const clipboardText = await electronApp.evaluate(({ clipboard }) => {
+    return clipboard.readText();
+  })
+  expect(clipboardText).toContain("Paul")
+  await expect(window.getByText('mutation CreateUser')).toBeVisible()
+  await window.keyboard.press('Escape')
+  await expect(window.getByText('mutation CreateUser')).not.toBeVisible()
+});
+test("popups work response", async () => {
+  await window.getByTestId('response-box').nth(0).click()
+  const clipboardText = await electronApp.evaluate(({ clipboard }) => {
+    return clipboard.readText();
+  })
+  expect(clipboardText).toContain("Paul")
+  await expect(window.getByText('×')).toBeVisible()
+  await window.getByText('×').click()
+  await expect(window.getByText('×')).not.toBeVisible()
 });
 
 test("filter using regex pattern to display all data", async () => {
