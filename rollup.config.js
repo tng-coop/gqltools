@@ -2,8 +2,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import typescript from "rollup-plugin-typescript2";
 import esbuild from "rollup-plugin-esbuild";
-import postcss from "rollup-plugin-postcss"; // Add this line
-
+import postcss from "rollup-plugin-postcss";
 import { defineConfig } from "rollup";
 
 export default defineConfig({
@@ -37,7 +36,7 @@ export default defineConfig({
     postcss({
       extract: false, // Don't extract into a separate file
       modules: false, // Disable CSS Modules
-      inject: false, // Disable automatic injection
+      inject: true, // Enable automatic injection
     }),
   ],
   external: [
@@ -45,5 +44,6 @@ export default defineConfig({
   ],
   watch: {
     include: "src/renderer/**",
+    clearScreen: false, // Prevent screen clearing during rebuilds
   },
 });
