@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && rollup -c",
     "start": "npm run build && electron . --no-sandbox",
-    "dev": "rollup -c -w & electronmon . --no-sandbox",
+    "dev": "tsc --noEmit --watch & rollup -c -w & electronmon . --no-sandbox",
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
