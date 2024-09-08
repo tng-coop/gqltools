@@ -52,11 +52,11 @@ const root = {
   users: () => {
     return users;
   },
-  createUser: ({ input }: { input: { name: string } }): User => {
-    const newUser: User = { id: users.length + 1, name: input.name };
-    users.push(newUser);
-    return newUser;
-  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  createUser: ({ input }: { input: { name: string } }): User | null => {
+    // Do nothing and return null
+    return null;
+  }
 };
 
 const app = express();

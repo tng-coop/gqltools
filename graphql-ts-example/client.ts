@@ -171,11 +171,14 @@ async function run() {
       const axiosInstance = createAuthenticatedInstance(token, proxyIndex);
 
       // console.log(`Using proxy ${proxyIndex} for user ${userName}`);
+      // say hello 20 times
+      for (let j = 0; j < 1; j++) {
+        // Fetch users and create a new user
+        await fetchUsers(axiosInstance);
+        await createUser(axiosInstance, userName);
+        await fetchUsers(axiosInstance); // Fetch again to confirm the new user creation
+      }
 
-      // Fetch users and create a new user
-      await fetchUsers(axiosInstance);
-      await createUser(axiosInstance, userName);
-      await fetchUsers(axiosInstance); // Fetch again to confirm the new user creation
     }
 
     // console.log("All users have been processed successfully.");

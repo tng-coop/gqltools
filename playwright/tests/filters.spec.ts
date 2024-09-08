@@ -134,7 +134,7 @@ test("verify response popup", async () => {
   const clipboardText = await electronApp.evaluate(({ clipboard }) => {
     return clipboard.readText();
   });
-  expect(clipboardText).toContain("Paul");
+  expect(clipboardText).toContain("Bob");
   await expect(window.getByText('×')).toBeVisible();
   await window.getByText('×').click();
   await expect(window.getByText('×')).not.toBeVisible();
