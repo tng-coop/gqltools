@@ -142,21 +142,31 @@ export class GraphqlDataContainer extends LitElement {
     port: number;
     portDescription: string;
   }): void {
-    this.data = {
-      ...this.data,
-      [data.requestId]: {
-        jwt: {
-          headerData: data.headerData,
-          authorizationHeader: data.authorizationHeader,
-        },
-        request: {
-          requestData: data.requestData,
-          port: data.port,
-          portDescription: data.portDescription,
-        },
+    // Add the new data
+    this.data[data.requestId] = {
+      jwt: {
+        headerData: data.headerData,
+        authorizationHeader: data.authorizationHeader,
+      },
+      request: {
+        requestData: data.requestData,
+        port: data.port,
+        portDescription: data.portDescription,
       },
     };
+  
+    // If more than 5 elements, keep only the top 5 highest requestIds
+    const keys = Object.keys(this.data).map(Number);
+    const maxLength=1000
+    if (keys.length > maxLength) {
+      const top5Keys = keys.sort((a, b) => b - a).slice(0, maxLength);
+      this.data = top5Keys.reduce((acc, key) => {
+        acc[key] = this.data[key];
+        return acc;
+      }, {} as typeof this.data);
+    }
   }
+  
 
   private _handleGraphqlResponse(data: {
     requestId: number;
