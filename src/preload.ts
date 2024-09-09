@@ -1,4 +1,5 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"; // Import IpcRendererEvent
+const { contextBridge, ipcRenderer } = require('electron');
+import type { IpcRendererEvent } from 'electron'; // Import the type
 
 interface ProxyServerConfig {
   port: number;
@@ -30,9 +31,6 @@ const defaultConfig: AppConfig = {
 // Use the parsed config if available, otherwise fall back to the default
 const finalConfig: AppConfig = config || defaultConfig;
 
-// Debug log to confirm preload script execution
-// // console.log("Preload script loaded");
-
 contextBridge.exposeInMainWorld("electron", {
   toggleMaximize: () => {
     ipcRenderer.send("toggle-maximize");
@@ -48,15 +46,11 @@ contextBridge.exposeInMainWorld("electron", {
   // GraphQL request handler
   onGraphqlDetected: (
     callback: (
-      event: IpcRendererEvent, // Use IpcRendererEvent instead of Electron.IpcRendererEvent
-      data: { requestId: number; url: string; request: string },
+      event: IpcRendererEvent, // Correctly reference the imported IpcRendererEvent
+      data: { requestId: number; url: string; request: string }
     ) => void,
   ) => {
-    // // console.log("Registering onGraphqlDetected event");
-
     ipcRenderer.on("graphql-detected", (event: IpcRendererEvent, data: unknown) => {
-      // // console.log("ipcRenderer.on graphql-detected event triggered in preload");
-
       if (
         typeof data === "object" &&
         data !== null &&
@@ -77,7 +71,7 @@ contextBridge.exposeInMainWorld("electron", {
   // GraphQL response handler
   onGraphqlResponse: (
     callback: (
-      event: IpcRendererEvent, // Use IpcRendererEvent here
+      event: IpcRendererEvent, // Correctly reference the imported IpcRendererEvent
       data: {
         requestId: number;
         response: string;
@@ -86,11 +80,7 @@ contextBridge.exposeInMainWorld("electron", {
       },
     ) => void,
   ) => {
-    // // console.log("Registering onGraphqlResponse event");
-
     ipcRenderer.on("graphql-response", (event: IpcRendererEvent, data: unknown) => {
-      // // console.log("ipcRenderer.on graphql-response event triggered in preload");
-
       if (
         typeof data === "object" &&
         data !== null &&

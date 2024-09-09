@@ -21,11 +21,9 @@ const rendererConfig = {
     }),
     commonjs(), // Convert CommonJS modules to ES6
     typescript({
-      useTsconfigDeclarationDir: true, // Ensure d.ts file generation
       tsconfigOverride: {
         compilerOptions: {
-          declaration: true,
-          declarationDir: "./dist/renderer", // Output directory for types
+          declaration: false, // No .d.ts files
         },
         include: ["src/renderer/**/*"], // Include only renderer files
       },
@@ -61,11 +59,9 @@ const mainConfig = {
     }),
     commonjs(), // Convert CommonJS modules to ES6
     typescript({
-      useTsconfigDeclarationDir: true, // Ensure d.ts file generation
       tsconfigOverride: {
         compilerOptions: {
-          declaration: true,
-          declarationDir: "./dist", // Output directory for types
+          declaration: false, // No .d.ts files
         },
         include: ["src/main.ts"], // Include only main files
       },
@@ -96,11 +92,9 @@ const preloadConfig = {
     }),
     commonjs(), // Convert CommonJS modules to ES6
     typescript({
-      useTsconfigDeclarationDir: true, // Ensure d.ts file generation
       tsconfigOverride: {
         compilerOptions: {
-          declaration: true,
-          declarationDir: "./dist", // Output directory for types
+          declaration: false, // No .d.ts files
         },
         include: ["src/preload.ts"], // Include only preload files
       },
