@@ -4,6 +4,7 @@ import { dirname, join } from "path";
 import { existsSync, readFileSync, copyFileSync } from "fs";
 import { startProxyServers } from "./proxyServer.js";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
