@@ -1,4 +1,5 @@
-const { contextBridge, ipcRenderer } = require("electron");
+import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"; // Import IpcRendererEvent
+
 interface ProxyServerConfig {
   port: number;
   description: string;
@@ -47,13 +48,13 @@ contextBridge.exposeInMainWorld("electron", {
   // GraphQL request handler
   onGraphqlDetected: (
     callback: (
-      event: unknown,
+      event: IpcRendererEvent, // Use IpcRendererEvent instead of Electron.IpcRendererEvent
       data: { requestId: number; url: string; request: string },
     ) => void,
   ) => {
     // // console.log("Registering onGraphqlDetected event");
 
-    ipcRenderer.on("graphql-detected", (event, data: unknown) => {
+    ipcRenderer.on("graphql-detected", (event: IpcRendererEvent, data: unknown) => {
       // // console.log("ipcRenderer.on graphql-detected event triggered in preload");
 
       if (
@@ -63,26 +64,20 @@ contextBridge.exposeInMainWorld("electron", {
         "url" in data &&
         "request" in data
       ) {
-        // // console.log(
-        //   "Received graphql-detected event in preload with data:",
-        //   data,
-        // );
         callback(
           event,
           data as { requestId: number; url: string; request: string },
         );
       } else {
-        // console.error("Received invalid graphql-detected data:", data);
+        console.error("Received invalid graphql-detected data:", data);
       }
     });
-
-    // // console.log("GraphQL event registration complete");
   },
 
   // GraphQL response handler
   onGraphqlResponse: (
     callback: (
-      event: unknown,
+      event: IpcRendererEvent, // Use IpcRendererEvent here
       data: {
         requestId: number;
         response: string;
@@ -93,7 +88,7 @@ contextBridge.exposeInMainWorld("electron", {
   ) => {
     // // console.log("Registering onGraphqlResponse event");
 
-    ipcRenderer.on("graphql-response", (event, data: unknown) => {
+    ipcRenderer.on("graphql-response", (event: IpcRendererEvent, data: unknown) => {
       // // console.log("ipcRenderer.on graphql-response event triggered in preload");
 
       if (
@@ -102,10 +97,6 @@ contextBridge.exposeInMainWorld("electron", {
         "requestId" in data &&
         "response" in data
       ) {
-        // // console.log(
-        //   "Received graphql-response event in preload with data:",
-        //   data,
-        // );
         callback(
           event,
           data as {
@@ -116,24 +107,17 @@ contextBridge.exposeInMainWorld("electron", {
           },
         );
       } else {
-        // console.error("Received invalid graphql-response data:", data);
+        console.error("Received invalid graphql-response data:", data);
       }
     });
-
-    // // console.log("GraphQL response event registration complete");
   },
 
   // Ctrl + Wheel handler
   onCtrlWheel: (
     callback: (data: { deltaX: number; deltaY: number }) => void,
   ) => {
-    // // console.log("Registering Ctrl + Wheel event");
-
     window.addEventListener("wheel", (event) => {
       if (event.ctrlKey) {
-        // // console.log("Ctrl + Wheel detected", event.deltaY);
-
-        // Send the event data to the main process
         ipcRenderer.send("ctrl-wheel", {
           deltaX: event.deltaX,
           deltaY: event.deltaY,
@@ -143,7 +127,5 @@ contextBridge.exposeInMainWorld("electron", {
         callback({ deltaX: event.deltaX, deltaY: event.deltaY });
       }
     });
-
-    // // console.log("Ctrl + Wheel event registration complete");
   },
 });
