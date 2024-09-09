@@ -5,54 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GraphQL Monitor</title>
     <style>
-      :root {
-        --padding-small: 0.3125rem; /* 5px */
-        --padding-medium: 0.625rem; /* 10px */
-        --border-width: 0.0625rem; /* 1px */
-        --header-height: 15%; /* 15% of viewport height */
-        --font-size-large: 1.75rem; /* 28px */
-
-        /* Color variables */
-        --color-header-bg: #333;
-        --color-header-text: #fff;
-        --color-button-bg: #555;
-        --color-button-bg-hover: #777;
-        --color-box-border: #ddd;
-        --color-box-bg: #f5f5f5;
-      }
 
       /* Container setup */
       .app-container {
         display: flex;
-        flex-direction: column;
-        height: 100vh; /* Full viewport height */
+      flex-direction: column;
+      height: 100vh; /* Ensures it takes the full viewport height */
       }
 
       /* Header styling */
       header-container {
-        flex: 0 0 auto; /* Prevents the header from growing or shrinking */
-        width: 100%;
-        background-color: var(--color-header-bg);
-        color: var(--color-header-text);
+        background-color: #333;
+        color: #fff;
       }
 
       /* Controls styling */
       .controls-container {
         display: flex;
-        align-items: center;
         justify-content: center;
-        flex: 0 0 auto; /* Prevents the controls container from growing or shrinking */
-        width: 100%;
-        background-color: var(--color-box-bg);
-        padding: var(--padding-medium);
+        padding: .5rem;
       }
 
       /* Scrollable area styling */
       .scrollable-content {
-        flex: 1 1 auto; /* Allows the content area to grow and fill the remaining space */
-        overflow-y: auto; /* Makes the content area scrollable vertically */
-        width: 100%; /* Ensures the scrollable area takes full width */
-        padding: var(--padding-medium); /* Adds padding around the content */
+        flex-grow: 1;
+      overflow-y: auto; /* Allows scrolling inside this div */
+      background-color: #fafafa;
+      padding: 10px;
       }
 
       /* Style the request and response boxes */
