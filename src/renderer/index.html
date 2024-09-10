@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GraphQL Monitor</title>
     <style>
+html, body {
+  height: 100%;
+  overflow: hidden; /* Hide external scrollbar */
+}
 
       /* Container setup */
       .app-container {
         display: flex;
       flex-direction: column;
-      height: 100vh; /* Ensures it takes the full viewport height */
+      height: 98vh; /* Ensures it takes the full viewport height */
       }
 
       /* Header styling */
@@ -30,8 +34,8 @@
       .scrollable-content {
         flex-grow: 1;
       overflow-y: auto; /* Allows scrolling inside this div */
-      background-color: #fafafa;
       padding: 10px;
+
       }
 
       /* Style the request and response boxes */
@@ -40,7 +44,6 @@
         padding: var(--padding-medium);
         margin: var(--padding-small) 0;
         white-space: pre-wrap;
-        background-color: var(--color-box-bg);
       }
     </style>
   </head>
