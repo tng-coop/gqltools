@@ -5,37 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GraphQL Monitor</title>
     <style>
-html, body {
-  height: 100%;
-  overflow: hidden; /* Hide external scrollbar */
-}
-
-      /* Container setup */
-      .app-container {
-        display: flex;
-      flex-direction: column;
-      height: 98vh; /* Ensures it takes the full viewport height */
+      html,body {
+        height: 100%;
+        margin: 0;
+        overflow: hidden; /* Hide external scrollbar */
       }
 
       /* Header styling */
       header-container {
+        display: flex;
+        flex-direction: column;
         background-color: #333;
         color: #fff;
       }
-
       /* Controls styling */
       .controls-container {
         display: flex;
         justify-content: center;
-        padding: .5rem;
+        padding: 0.5rem;
       }
+      
+/* Ensure the header takes up only as much space as needed */
+.app-header {
+  display: flex;
+  flex-direction: column;
+}
 
+/* Container setup: fill the remaining space after the header */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin: .5rem;
+  height: calc(100vh - 1rem); /* Make the wrapper take full viewport height */
+}
+
+.app-container {
+  flex-grow: 1; /* This allows .app-container to take up remaining space */
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Enables vertical scrolling inside the container */
+}
       /* Scrollable area styling */
       .scrollable-content {
         flex-grow: 1;
-      overflow-y: auto; /* Allows scrolling inside this div */
-      padding: 10px;
-
+        overflow-y: auto; /* Allows scrolling inside this div */
+        padding: 10px;
       }
 
       /* Style the request and response boxes */
@@ -48,20 +62,20 @@ html, body {
     </style>
   </head>
   <body>
-    <div class="app-container">
-      <!-- Fixed header -->
+    <div class="app-wrapper">
+    <div class="app-header">
       <header-container></header-container>
-
-      <!-- Fixed controls -->
       <div class="controls-container">
         <filter-input></filter-input>
         <request-counter></request-counter>
       </div>
-
+    </div>
+    <div class="app-container">
       <!-- Scrollable content -->
       <div class="scrollable-content">
         <graphql-data-container></graphql-data-container>
       </div>
+    </div>
     </div>
 
     <!-- New JSON Modal -->

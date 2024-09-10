@@ -7,7 +7,7 @@
     "build": "rollup -c",
     "tt": "rollup -c -w",
     "start": "rollup -c && electron . --no-sandbox",
-    "dev": "concurrently \"npx rollup -c -w\" \"npx electronmon . --no-sandbox\"",
+    "dev": "concurrently \"npx rollup -c -w\" \"npx electronmon --inspect=9222 --remote-debugging-port=9223 . --no-sandbox\"",
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
