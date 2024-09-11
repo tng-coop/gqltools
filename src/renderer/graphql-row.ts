@@ -130,8 +130,15 @@ export class GraphqlRow extends LitElement {
       this.formattedResponse = "waiting...";
       return;
     }
+    const parsedResponse=  (JSON.parse(this.responseData) )as {data?: object};
+    let parsedResponse2 = null;
+    if(parsedResponse.data){
+      parsedResponse2 = parsedResponse.data;
+    }else{
+      parsedResponse2 = parsedResponse;
+    }
     this.formattedResponse = JSON.stringify(
-      JSON.parse(this.responseData),
+      parsedResponse2,
       null,
       2,
     );
@@ -165,7 +172,7 @@ export class GraphqlRow extends LitElement {
             class="graphql-box header-box"
             .jwt="${this?.authorizationHeader || ""}"
             @processed-authorization-data="${(event: CustomEvent<string>) =>
-              this.handleProcessedAuthorizationData(event)}"
+        this.handleProcessedAuthorizationData(event)}"
             @click="${(event: Event) => this.handleClick(event)}"
             data-column="header"
             style="margin-right: 10px;"
@@ -212,23 +219,24 @@ export class GraphqlRow extends LitElement {
         jsonModal.open = true;
 
         // Copy graphqlJson to clipboard
-        try {
-          let parsedJson = JSON.parse(contentToCopy) as unknown as {
-            query?: string;
-            variables?: string;
-          };
-          let parsedJson2 = null;
-          if (column === "request") {
-            delete parsedJson["query"];
-            parsedJson2 = parsedJson.variables;
-          } else {
+        let parsedJson = JSON.parse(contentToCopy) as unknown as {
+          query?: string;
+          variables?: object;
+          data?: object;
+        };
+        let parsedJson2 = null;
+        if (column === "request") {
+          delete parsedJson["query"];
+          parsedJson2 = parsedJson.variables;
+        } else {
+          if(parsedJson.data){
+            parsedJson2 = parsedJson.data;
+          }else{
             parsedJson2 = parsedJson;
           }
-          const formattedContent = JSON.stringify(parsedJson2, null, 2);
-          await navigator.clipboard.writeText(formattedContent);
-        } catch (err) {
-          console.error("Failed to copy to clipboard: ", err);
         }
+        const formattedContent = JSON.stringify(parsedJson2, null, 2);
+        await navigator.clipboard.writeText(formattedContent);
 
         jsonModal.requestUpdate();
       }
