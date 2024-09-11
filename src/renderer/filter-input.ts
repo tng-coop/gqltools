@@ -51,21 +51,29 @@ class FilterInput extends LitElement {
     super();
 
     // Access the config from the main process at the beginning
-    const config: AppConfig = window.electron.getConfig();
+    const config: AppConfig = window.electron.getConfig() as AppConfig;
     // console.log("Config received in renderer:", config);
+
+    // Safely initialize states from localStorage
+    const storedFilterTag = localStorage.getItem("filter-tag");
+    this.filterTag = storedFilterTag ?? "";
+
+    const storedRegexEnabled = localStorage.getItem("regex-enabled");
+    this.regexEnabled = storedRegexEnabled ? JSON.parse(storedRegexEnabled) === true : false;
+
+    const storedScanRequest = localStorage.getItem("scan-request");
+    this.scanRequest = storedScanRequest ? JSON.parse(storedScanRequest) === true : true;
+
+    const storedScanResponse = localStorage.getItem("scan-response");
+    this.scanResponse = storedScanResponse ? JSON.parse(storedScanResponse) === true : true;
 
     // Initialize proxy server states (enabled/disabled) based on the config and localStorage
     if (config) {
       config.proxyServers.forEach((server: ProxyServerConfig) => {
-        const storedState: string | null = localStorage.getItem(
-          `proxy-enabled-${server.port}`,
-        );
-        // Set default to true if there's no stored state
+        const storedState = localStorage.getItem(`proxy-enabled-${server.port}`);
         this.proxyServersEnabled = {
           ...this.proxyServersEnabled,
-          [server.port]: storedState
-            ? (JSON.parse(storedState) as boolean)
-            : true,
+          [server.port]: storedState ? JSON.parse(storedState) === true : true,
         };
       });
     }
@@ -133,7 +141,7 @@ class FilterInput extends LitElement {
   };
 
   render() {
-    const config: AppConfig = window.electron.getConfig();
+    const config: AppConfig = window.electron.getConfig() as AppConfig;
 
     return html`
       <div id="filter-tag-container">
