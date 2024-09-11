@@ -41,7 +41,7 @@ class FilterInput extends LitElement {
     `,
   ];
 
-  @property({ type: String }) filterTag = "";
+  @state() filterTag = "";
   @state() regexEnabled = false;
   @state() scanRequest = true;
   @state() scanResponse = true;

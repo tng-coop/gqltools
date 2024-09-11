@@ -44,30 +44,6 @@ export class GraphqlDataContainer extends LitElement {
   @state() filterResponse = true;
   @state() proxyServersEnabled: Record<number, boolean> = {}; // Add state to track enabled proxy servers
 
-  constructor() {
-    super();
-
-    // Access the config from the main process at the beginning
-    const config: AppConfig = window.electron.getConfig();
-    // console.log("Config received in renderer:", config);
-
-    // Initialize proxy server states (enabled/disabled) based on the config and localStorage
-    if (config) {
-      config.proxyServers.forEach((server: ProxyServerConfig) => {
-        const storedState: string | null = localStorage.getItem(
-          `proxy-enabled-${server.port}`,
-        );
-        // Set default to true if there's no stored state
-        this.proxyServersEnabled = {
-          ...this.proxyServersEnabled,
-          [server.port]: storedState
-            ? (JSON.parse(storedState) as boolean)
-            : true,
-        };
-      });
-    }
-  }
-
   connectedCallback() {
     super.connectedCallback();
     this._addEventListeners(); // Moved event listener setup to connectedCallback
