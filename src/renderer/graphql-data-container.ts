@@ -85,6 +85,7 @@ export class GraphqlDataContainer extends LitElement {
   }
 
   private _handleFilterChange(event: FilterChangeEvent): void {
+    console.log("Filter change event received in graphql-data-container");
     // Access the correctly typed detail object
     const {
       filterTag,
@@ -99,9 +100,9 @@ export class GraphqlDataContainer extends LitElement {
     this.filterRequest = scanRequest; // Correctly assign scanRequest to filterRequest
     this.filterResponse = scanResponse; // Correctly assign scanResponse to filterResponse
     this.proxyServersEnabled = proxyServersEnabled; // Set the state for enabled/disabled proxy servers
-    // console.log(
-    //   `New settings: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}, Proxy Servers: ${JSON.stringify(this.proxyServersEnabled)}`,
-    // );
+    console.log(
+      `New settings: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}, Proxy Servers: ${JSON.stringify(this.proxyServersEnabled)}`,
+    );
     this.requestUpdate(); // Request update after change
   }
 
@@ -163,9 +164,9 @@ export class GraphqlDataContainer extends LitElement {
   }
 
   render() {
-    // console.log(
-    //   `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
-    // );
+    console.log(
+      `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
+    );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
 
     const filteredIds = Object.keys(this.data)
@@ -187,9 +188,9 @@ export class GraphqlDataContainer extends LitElement {
               regex.test(response.responseData))
           );
         }
-
         // Fallback to simple includes method based on filterRequest and filterResponse flags
         const lowerCaseQuery = this.filterQuery.toLowerCase();
+        console.log('lowerCaseQuery', lowerCaseQuery)
         return (
           (this.filterRequest &&
             request.requestData.toLowerCase().includes(lowerCaseQuery)) ||

@@ -49,7 +49,7 @@ class FilterInput extends LitElement {
 
   constructor() {
     super();
-
+    console.log('const called')
     // Access the config from the main process at the beginning
     const config: AppConfig = window.electron.getConfig() as AppConfig;
     // console.log("Config received in renderer:", config);
@@ -77,6 +77,20 @@ class FilterInput extends LitElement {
         };
       });
     }
+    const filterChangeEvent: FilterChangeEvent =
+    new CustomEvent<FilterChangeDetail>("filter-change", {
+      detail: {
+        filterTag: this.filterTag,
+        regexEnabled: this.regexEnabled,
+        scanRequest: this.scanRequest,
+        scanResponse: this.scanResponse,
+        proxyServersEnabled: this.proxyServersEnabled, // Include proxy server states
+      },
+    });
+    
+    setTimeout(() => {
+      eventBus.dispatchEvent(filterChangeEvent);
+    }, 0);
   }
 
   private _handleInput = (event: Event): void => {
@@ -142,7 +156,6 @@ class FilterInput extends LitElement {
 
   render() {
     const config: AppConfig = window.electron.getConfig() as AppConfig;
-
     return html`
       <div id="filter-tag-container">
         <input
