@@ -152,34 +152,33 @@ class FilterInput extends LitElement {
           .value=${this.filterTag}
           @input=${this._handleInput}
         />
-        <label for="regex-checkbox">Regex</label>
         <input
           id="regex-checkbox"
           type="checkbox"
           .checked=${this.regexEnabled}
           @change=${this._handleInput}
         />
+        <label for="regex-checkbox">Regex</label>
         <!-- Adding Request Checkbox -->
-        <label for="request-checkbox">Request</label>
         <input
           id="request-checkbox"
           type="checkbox"
           .checked=${this.scanRequest}
           @change=${this._handleInput}
         />
+        <label for="request-checkbox">Request</label>
         <!-- Adding Response Checkbox -->
-        <label for="response-checkbox">Response</label>
         <input
           id="response-checkbox"
           type="checkbox"
           .checked=${this.scanResponse}
           @change=${this._handleInput}
         />
+        <label for="response-checkbox">Response</label>
 
         <!-- Dynamically adding checkboxes for proxy servers -->
         ${config.proxyServers.map(
           (server: ProxyServerConfig) => html`
-            <label for="proxy-port-${server.port}">${server.port}</label>
             <input
               id="proxy-port-${server.port}"
               type="checkbox"
@@ -187,6 +186,7 @@ class FilterInput extends LitElement {
               .checked=${this.proxyServersEnabled[server.port]}
               @change=${this._handleInput}
             />
+            <label for="proxy-port-${server.port}">${server.port}</label>
           `,
         )}
       </div>

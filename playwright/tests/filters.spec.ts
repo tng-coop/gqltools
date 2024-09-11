@@ -106,9 +106,10 @@ test("verify JWT popup", async () => {
   await expect(window.locator("graphql-row")).toHaveCount(6); // Adjust based on your data
   await window.getByTestId('jwt-container').nth(0).click();
   // Use Electron's clipboard module to check the clipboard content
-  const clipboardText = await electronApp.evaluate(({ clipboard }) => {
+  const clipboardText = await electronApp.evaluate(({ clipboard }: { clipboard: Electron.Clipboard }) => {
     return clipboard.readText();
-  });
+});
+
   expect(clipboardText).toContain("Bearer eyJ");
 });
 
