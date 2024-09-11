@@ -88,16 +88,14 @@ test("verify initial data loading", async () => {
   };
 
   const json3 = JSON.parse(jsonTxt3) as {
-    data: {
       users: {
         id: string;
         name: string;
       }[];
-    };
   };
   expect(json1.username).toBe("admin");
   expect(json2.operationName).toBe("GetUsers");
-  expect(json3.data.users[0].name).toBe("Alice");
+  expect(json3.users[0].name).toBe("Alice");
 });
 
 test("verify default view displays all data", async () => {
@@ -199,16 +197,14 @@ test("filter by specific request name and validate results", async () => {
       operationName: string;
     };
     const json3 = JSON.parse(jsonTxt3) as {
-      data: {
         users: {
           id: string;
           name: string;
         }[];
-      };
     };
 
     expect(json2.operationName).toBe("GetUsers");
-    expect(json3.data.users[0].name).toBe("Alice");
+    expect(json3.users[0].name).toBe("Alice");
   } else {
     throw new Error("Could not find the request/response JSON content");
   }
@@ -260,16 +256,14 @@ test("filter by port 8080 to display matching requests", async () => {
       operationName: string;
     };
     const json3 = JSON.parse(jsonTxt3) as {
-      data: {
         users: {
           id: string;
           name: string;
         }[];
-      };
     };
 
     expect(json2.operationName).toBe("GetUsers");
-    expect(json3.data.users[0].name).toBe("Alice");
+    expect(json3.users[0].name).toBe("Alice");
   } else {
     throw new Error(
       "Could not find the request/response JSON content for port 8080",
@@ -303,16 +297,14 @@ test("filter by port 8081 to display matching requests", async () => {
       operationName: string;
     };
     const json3 = JSON.parse(jsonTxt3) as {
-      data: {
         users: {
           id: string;
           name: string;
         }[];
-      };
     };
 
     expect(json2.operationName).toBe("GetUsers");
-    expect(json3.data.users[0].name).toBe("Alice");
+    expect(json3.users[0].name).toBe("Alice");
   } else {
     throw new Error(
       "Could not find the request/response JSON content for port 8081",
