@@ -13,9 +13,9 @@ export class GraphqlRow extends LitElement {
   @property({ type: String }) requestData = "";
   @property({ type: String }) responseData = "Waiting for response...";
   @property({ type: String }) authorizationHeader = ""; // Authorization header
-  @property({ type: String }) parsedJwtPacked = ""; // Decoded JWT or processed data
+  // @property({ type: String }) parsedJwtPacked = ""; // Decoded JWT or processed data
   @property({ type: String }) parsedJwtFormatted = ""; // Decoded JWT or processed data
-  @property({ type: String }) filterableText = ""; // Text used for filtering
+  // @property({ type: String }) filterableText = ""; // Text used for filtering
   @property({ type: String }) operationType = ""; // Type of GraphQL operation (query, mutation, subscription)
   @property({ type: String }) operationName = ""; // Name of the GraphQL operation
   @property({ type: String }) formattedRequestVar = ""; // Formatted request variables
@@ -59,7 +59,7 @@ export class GraphqlRow extends LitElement {
       transform: scale(0.98);
     }
 
-    .header-box {
+    .jwt-box {
       background-color: #e1f7d5;
     }
 
@@ -129,8 +129,8 @@ export class GraphqlRow extends LitElement {
     };
 
     this.operationType = this.extractOperationType(rdparsed.query);
-    this.filterableText =
-      `${this.parsedJwtPacked} ${this.formattedRequestVar} ${this.responseData}`.toLowerCase();
+    // this.filterableText =
+    //   `${this.parsedJwtFormatted} ${this.formattedRequestVar} ${this.responseData}`.toLowerCase();
     const rdparsedWithoutQuery = {
       operationName: rdparsed.operationName,
       variables: rdparsed.variables,
@@ -149,7 +149,7 @@ export class GraphqlRow extends LitElement {
       parsedResponse2 = parsedResponse;
     }
     this.formattedResponse = JSON.stringify(parsedResponse2, null, 2);
-    this.parsedJwtPacked = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 0);
+    // this.parsedJwtPacked = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 0);
     this.parsedJwtFormatted = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 2);
   }
 
@@ -225,7 +225,7 @@ export class GraphqlRow extends LitElement {
         <!-- Box container with horizontal flex layout for JWT, request, response -->
         <div class="graphql-box-container" style="display: flex; flex-direction: row; flex-grow: 1;">
           <div
-            class="graphql-box response-box"
+            class="graphql-box jwt-box"
             .jwt="${this.parsedJwtFormatted || ""}"
             @click="${(event: Event) => this.handleClick(event)}"
             data-column="jwt"
