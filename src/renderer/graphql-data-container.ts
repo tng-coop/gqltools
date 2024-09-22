@@ -162,23 +162,22 @@ export class GraphqlDataContainer extends LitElement {
       this.requestUpdate();
     }
   }
-
   render() {
     console.log(
       `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
     );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
-
+  
     const filteredIds = Object.keys(this.data)
       .map(Number)
       .filter((requestId) => {
         const { request, response } = this.data[requestId];
-
+  
         // Check if the port is enabled before filtering further
         if (!this.proxyServersEnabled[request.port]) {
           return false; // Skip this request if its port is disabled
         }
-
+  
         if (regex) {
           // Use regex for filtering based on filterRequest and filterResponse flags
           return (
@@ -200,21 +199,21 @@ export class GraphqlDataContainer extends LitElement {
         );
       })
       .sort((a, b) => b - a);
-
+  
     // Dispatch the event to update the number of requests in memory
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-in-memory", {
         detail: { count: Object.keys(this.data).length },
       }),
     );
-
+  
     // Dispatch the event to update the number of requests on display
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-on-display", {
         detail: { count: filteredIds.length },
       }),
     );
-
+  
     return html`
       ${repeat(
         filteredIds,
@@ -222,6 +221,10 @@ export class GraphqlDataContainer extends LitElement {
           const { response } = this.data[requestId];
           return (
             requestId.toString() +
+            "-" +
+            this.filterQuery +
+            "-" +
+            this.filterRegex.toString() +
             "-" +
             (response ? response.responseData.length : 0).toString()
           );
@@ -237,11 +240,13 @@ export class GraphqlDataContainer extends LitElement {
               .responseData="${response?.responseData || ""}"
               .authorizationHeader="${jwt.authorizationHeader || ""}"
               .requestId="${requestId}"
-              >${requestId}-${response?.responseData.length ?? 0}</graphql-row
-            >
+              .highlightValue="${this.filterQuery}"
+              .isRegex="${this.filterRegex}"
+              >${requestId}-${response?.responseData.length ?? 0}</graphql-row>
           `;
         },
       )}
     `;
   }
+  
 }

@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js"; // Import unsafeHTML
 import "./json-modal";
 import "./jwt-authorization-cell";
 import { JsonModal } from "./json-modal";
@@ -16,9 +17,11 @@ export class GraphqlRow extends LitElement {
   @property({ type: String }) processedAuthorizationData = ""; // Decoded JWT or processed data
   @property({ type: String }) filterableText = ""; // Text used for filtering
   @property({ type: String }) operationType = ""; // Type of GraphQL operation (query, mutation, subscription)
-  @property({ type: String }) operationName = ""; // Type of GraphQL operation (query, mutation, subscription)
-  @property({ type: String }) formattedRequestVar = ""; // Type of GraphQL operation (query, mutation, subscription)
-  @property({ type: String }) formattedResponse = ""; // Type of GraphQL operation (query, mutation, subscription)
+  @property({ type: String }) operationName = ""; // Name of the GraphQL operation
+  @property({ type: String }) formattedRequestVar = ""; // Formatted request variables
+  @property({ type: String }) formattedResponse = ""; // Formatted response
+  @property({ type: String }) highlightValue = "type"; // Default value for highlighting
+  @property({ type: Boolean }) isRegex = false; // Boolean to indicate if highlightValue is regex
 
   static styles = css`
     :host {
@@ -44,7 +47,6 @@ export class GraphqlRow extends LitElement {
       transition:
         background-color 0.3s ease,
         transform 0.1s ease;
-
       cursor: pointer;
     }
 
@@ -84,6 +86,13 @@ export class GraphqlRow extends LitElement {
     .row-unknown {
       background-color: #f0f0f0; /* Neutral gray for unknown or other types */
     }
+
+    .highlighted-text {
+      background-color: yellow;
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
   `;
 
   connectedCallback() {
@@ -98,7 +107,9 @@ export class GraphqlRow extends LitElement {
       changedProperties.has("responseData") ||
       changedProperties.has("authorizationHeader") ||
       changedProperties.has("requestId") ||
-      changedProperties.has("processedAuthorizationData")
+      changedProperties.has("processedAuthorizationData") ||
+      changedProperties.has("highlightValue") || // Re-run when highlightValue changes
+      changedProperties.has("isRegex") // Re-run when isRegex changes
     ) {
       this.updateFilterableText();
       this.requestUpdate();
@@ -107,11 +118,11 @@ export class GraphqlRow extends LitElement {
 
   private updateFilterableText() {
     const rdstring: string = this.requestData as unknown as string;
-    //if blank return
+    // If blank, return
     if (!rdstring) {
       return;
     }
-    const rdparsed = JSON.parse(rdstring) as unknown as {
+    const rdparsed = JSON.parse(rdstring) as {
       query: string;
       variables: string;
       operationName: string;
@@ -125,23 +136,19 @@ export class GraphqlRow extends LitElement {
       variables: rdparsed.variables,
     };
     this.formattedRequestVar = JSON.stringify(rdparsedWithoutQuery, null, 2);
-    // if blank return
+    // If blank, return
     if (!this.responseData) {
       this.formattedResponse = "waiting...";
       return;
     }
-    const parsedResponse=  (JSON.parse(this.responseData) )as {data?: object};
+    const parsedResponse = JSON.parse(this.responseData) as { data?: object };
     let parsedResponse2 = null;
-    if(parsedResponse.data){
+    if (parsedResponse.data) {
       parsedResponse2 = parsedResponse.data;
-    }else{
+    } else {
       parsedResponse2 = parsedResponse;
     }
-    this.formattedResponse = JSON.stringify(
-      parsedResponse2,
-      null,
-      2,
-    );
+    this.formattedResponse = JSON.stringify(parsedResponse2, null, 2);
   }
 
   private extractOperationType(query: string): string {
@@ -156,7 +163,35 @@ export class GraphqlRow extends LitElement {
     }
   }
 
+  private highlightText(content: string): string {
+    if (!this.highlightValue) {
+      return content; // Return the original content if highlightValue is not set
+    }
+
+    try {
+      const pattern = this.isRegex
+        ? new RegExp(this.highlightValue, "gi")
+        : new RegExp(this.escapeRegex(this.highlightValue), "gi");
+
+      return content.replace(
+        pattern,
+        '<span class="highlighted-text">$&</span>' // Wrap matched text in a highlighted span
+      );
+    } catch (e) {
+      // Return original content if regex is invalid
+      return content;
+    }
+  }
+
+  private escapeRegex(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
   render() {
+    // Highlight the request and response content based on the regex pattern
+    const highlightedRequest = this.highlightText(this.formattedRequestVar);
+    const highlightedResponse = this.highlightText(this.formattedResponse);
+
     // prettier-ignore
     const retval = html`
       <div class="graphql-row row-${this?.operationType || ""}" data-testid="graphql-row" style="display: flex; flex-direction: column;">
@@ -172,7 +207,7 @@ export class GraphqlRow extends LitElement {
             class="graphql-box header-box"
             .jwt="${this?.authorizationHeader || ""}"
             @processed-authorization-data="${(event: CustomEvent<string>) =>
-        this.handleProcessedAuthorizationData(event)}"
+              this.handleProcessedAuthorizationData(event)}"
             @click="${(event: Event) => this.handleClick(event)}"
             data-column="header"
             style="margin-right: 10px;"
@@ -185,7 +220,7 @@ export class GraphqlRow extends LitElement {
             data-value="${this.requestData}"
             data-testid="request-box"
             style="margin-right: 10px;"
-          >${this.formattedRequestVar}</div>
+          >${unsafeHTML(highlightedRequest)}</div> <!-- Use unsafeHTML for highlightedRequest -->
   
           <div
             class="graphql-box response-box"
@@ -193,7 +228,7 @@ export class GraphqlRow extends LitElement {
             data-column="response"
             data-value="${this.responseData}"
             data-testid="response-box"
-          >${this.formattedResponse}</div>
+          >${unsafeHTML(highlightedResponse)}</div> <!-- Use unsafeHTML for highlightedResponse -->
         </div>
       </div>
     `;
@@ -219,7 +254,7 @@ export class GraphqlRow extends LitElement {
         jsonModal.open = true;
 
         // Copy graphqlJson to clipboard
-        let parsedJson = JSON.parse(contentToCopy) as unknown as {
+        let parsedJson = JSON.parse(contentToCopy) as {
           query?: string;
           variables?: object;
           data?: object;
@@ -229,9 +264,9 @@ export class GraphqlRow extends LitElement {
           delete parsedJson["query"];
           parsedJson2 = parsedJson.variables;
         } else {
-          if(parsedJson.data){
+          if (parsedJson.data) {
             parsedJson2 = parsedJson.data;
-          }else{
+          } else {
             parsedJson2 = parsedJson;
           }
         }
