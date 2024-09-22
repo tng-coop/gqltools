@@ -158,54 +158,63 @@ export class GraphqlDataContainer extends LitElement {
     );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
 
-    const filteredIds: number[] = Object.keys(this.data)
-      .map((key) => Number(key))
-      .filter((requestId: number) => {
-        const graphqlData: GraphQLData | undefined = this.data[requestId];
-
-        if (!graphqlData) {
-          return false; // Skip if there's no data for this requestId
+    const keys = Object.keys(this.data); // Get all keys from the data object
+    const numericKeys = keys.map((key) => Number(key)); // Convert keys to numbers
+    
+    const filteredIds: number[] = [];
+    
+    for (const requestId of numericKeys) {
+      const graphqlData: GraphQLData | undefined = this.data[requestId];
+    
+      if (!graphqlData) {
+        continue; // Skip if there's no data for this requestId
+      }
+    
+      const { request, response } = graphqlData;
+    
+      // Check if the port is enabled before filtering further
+      if (!this.proxyServersEnabled[request.port]) {
+        continue; // Skip this request if its port is disabled
+      }
+    
+      // Destructure the filtering options for clarity
+      const { filterRequest, filterResponse } = this;
+    
+      // Type-safe checks for request and response data
+      const requestData = request.requestData;
+      const responseData = response?.responseData;
+    
+      // Handle filtering logic using regex if enabled
+      if (regex) {
+        const matchesRequest = filterRequest && regex.test(requestData);
+        const matchesResponse = filterResponse && responseData ? regex.test(responseData) : false;
+    
+        if (matchesRequest || matchesResponse) {
+          filteredIds.push(requestId);
         }
-
-        const { request, response } = graphqlData;
-
-        // Check if the port is enabled before filtering further
-        if (!this.proxyServersEnabled[request.port]) {
-          return false; // Skip this request if its port is disabled
-        }
-
-        // Destructure the filtering options for clarity
-        const { filterRequest, filterResponse } = this;
-
-        // Type-safe checks for request and response data
-        const requestData = request.requestData;
-        const responseData = response?.responseData;
-
-        // Handle filtering logic using regex if enabled
-        if (regex) {
-          const matchesRequest = filterRequest && regex.test(requestData);
-          const matchesResponse = filterResponse && responseData ? regex.test(responseData) : false;
-
-          return matchesRequest || matchesResponse;
-        }
-
-
-        // Fallback to simple includes method based on filterRequest and filterResponse flags
-        const lowerCaseQuery = this.filterQuery.toLowerCase();
-
-        // Extract and lowercase the request data for comparison
-        const requestDataIncludesQuery = this.filterRequest &&
-          request.requestData.toLowerCase().includes(lowerCaseQuery);
-
-        // Check if response data exists and includes the query
-        const responseDataIncludesQuery = this.filterResponse &&
-          (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false);
-
-        // Return whether the query is found in either the request or response data
-        return requestDataIncludesQuery || responseDataIncludesQuery;
-
-      })
-      .sort((a, b) => b - a);
+        continue;
+      }
+    
+      // Fallback to simple includes method based on filterRequest and filterResponse flags
+      const lowerCaseQuery = this.filterQuery.toLowerCase();
+    
+      // Extract and lowercase the request data for comparison
+      const requestDataIncludesQuery = filterRequest &&
+        request.requestData.toLowerCase().includes(lowerCaseQuery);
+    
+      // Check if response data exists and includes the query
+      const responseDataIncludesQuery = filterResponse &&
+        (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false);
+    
+      // Return whether the query is found in either the request or response data
+      if (requestDataIncludesQuery || responseDataIncludesQuery) {
+        filteredIds.push(requestId);
+      }
+    }
+    
+    // Sort the filteredIds in descending order
+    filteredIds.sort((a, b) => b - a);
+    
 
 
     // Dispatch the event to update the number of requests in memory
