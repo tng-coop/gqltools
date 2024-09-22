@@ -12,10 +12,8 @@ export class GraphqlRow extends LitElement {
   @property({ type: String }) portDescription?: string;
   @property({ type: String }) requestData = "";
   @property({ type: String }) responseData = "Waiting for response...";
-  @property({ type: String }) authorizationHeader = ""; // Authorization header
-  // @property({ type: String }) parsedJwtPacked = ""; // Decoded JWT or processed data
-  @property({ type: String }) parsedJwtFormatted = ""; // Decoded JWT or processed data
-  // @property({ type: String }) filterableText = ""; // Text used for filtering
+  @property({ type: String }) jwtRaw= ""; // Authorization header
+  @property({ type: String }) jwtFormatted= ""; // Decoded JWT or processed data
   @property({ type: String }) operationType = ""; // Type of GraphQL operation (query, mutation, subscription)
   @property({ type: String }) operationName = ""; // Name of the GraphQL operation
   @property({ type: String }) formattedRequestVar = ""; // Formatted request variables
@@ -105,9 +103,9 @@ export class GraphqlRow extends LitElement {
       changedProperties.has("port") ||
       changedProperties.has("requestData") ||
       changedProperties.has("responseData") ||
-      changedProperties.has("authorizationHeader") ||
+      changedProperties.has("jwtFormatted") ||
+      changedProperties.has("jwtRaw") ||
       changedProperties.has("requestId") ||
-      changedProperties.has("processedAuthorizationData") ||
       changedProperties.has("highlightValue") || // Re-run when highlightValue changes
       changedProperties.has("isRegex") // Re-run when isRegex changes
     ) {
@@ -149,8 +147,6 @@ export class GraphqlRow extends LitElement {
       parsedResponse2 = parsedResponse;
     }
     this.formattedResponse = JSON.stringify(parsedResponse2, null, 2);
-    // this.parsedJwtPacked = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 0);
-    this.parsedJwtFormatted = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 2);
   }
 
   private extractOperationType(query: string): string {
@@ -184,23 +180,6 @@ export class GraphqlRow extends LitElement {
       return content;
     }
   }
-  private parseJwt(token: string): unknown {
-    try {
-      const base64Url: string = token.split(".")[1];
-      const base64: string = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload: string = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join(""),
-      );
-
-      const payload: unknown = JSON.parse(jsonPayload) as unknown;
-      return payload
-    } catch {
-      return "Invalid JWT";
-    }
-  }
 
 
   private escapeRegex(text: string): string {
@@ -211,7 +190,7 @@ export class GraphqlRow extends LitElement {
     // Highlight the request and response content based on the regex pattern
     const highlightedRequest = this.highlightText(this.formattedRequestVar);
     const highlightedResponse = this.highlightText(this.formattedResponse);
-    const highlightedJwt = this.highlightText(this.parsedJwtFormatted);
+    const highlightedJwt = this.highlightText(this.jwtFormatted);
 
     // prettier-ignore
     const retval = html`
@@ -226,12 +205,11 @@ export class GraphqlRow extends LitElement {
         <div class="graphql-box-container" style="display: flex; flex-direction: row; flex-grow: 1;">
           <div
             class="graphql-box jwt-box"
-            .jwt="${this.parsedJwtFormatted || ""}"
             @click="${(event: Event) => this.handleClick(event)}"
             data-column="jwt"
             data-testid="jwt-box"
-            data-jwt-parsed="${this.parsedJwtFormatted}"
-            data-jwt-raw="${this.authorizationHeader}"
+            data-jwt-formatted="${this.jwtFormatted}"
+            data-jwt-raw="${this.jwtRaw}"
             style="margin-right: 10px;"
           >${unsafeHTML(highlightedJwt)}</div> <!-- Use unsafeHTML for highlightedResponse -->
           
@@ -266,7 +244,7 @@ export class GraphqlRow extends LitElement {
       const jsonModal = document.querySelector("json-modal") as JsonModal;
       if (jsonModal) {
         jsonModal.graphqlJson = false;
-        jsonModal.jsonContent = cell.dataset.jwtParsed || "";
+        jsonModal.jsonContent = cell.dataset.jwtFormatted || "";
         jsonModal.open = true;
         await navigator.clipboard.writeText(cell.dataset.jwtRaw || "");
         jsonModal.requestUpdate();

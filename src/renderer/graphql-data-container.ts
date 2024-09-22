@@ -154,6 +154,23 @@ export class GraphqlDataContainer extends LitElement {
   }
 
 
+  private parseJwt(token: string): unknown {
+    try {
+      const base64Url: string = token.split(".")[1];
+      const base64: string = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload: string = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(""),
+      );
+
+      const payload: unknown = JSON.parse(jsonPayload) as unknown;
+      return payload
+    } catch {
+      return "Invalid JWT";
+    }
+  }
   render() {
     console.log(
       `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
@@ -248,13 +265,17 @@ export class GraphqlDataContainer extends LitElement {
       },
       (requestId) => {
         const { jwt, request, response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+
+        const jwtFormatted= JSON.stringify(this.parseJwt(jwt.authorizationHeader), null, 2);
+        const jwtRaw= jwt.authorizationHeader
         return html`
             <graphql-row
               .requestData="${request.requestData || ""}"
               .port="${request.port}"
               .portDescription="${request.portDescription}"
               .responseData="${response?.responseData || ""}"
-              .authorizationHeader="${jwt.authorizationHeader || ""}"
+              .jwtFormatted="${jwtFormatted}"
+              .jwtRaw="${jwtRaw}"
               .requestId="${requestId}"
               .highlightValue="${this.filterQuery}"
               .isRegex="${this.filterRegex}"
