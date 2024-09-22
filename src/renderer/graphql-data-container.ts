@@ -131,19 +131,26 @@ export class GraphqlDataContainer extends LitElement {
     requestId: number;
     response: string;
   }): void {
-    if (this.data[data.requestId]) {
+    // Type-safe access to the existing request data
+    const existingRequest: GraphQLData | undefined = this.data[data.requestId];
+  
+    if (existingRequest) {
+      const updatedResponse: ResponseData = { responseData: data.response };
+      const updatedRequest: GraphQLData = {
+        ...existingRequest,
+        response: updatedResponse,
+      };
+  
+      // Update the state with the modified data
       this.data = {
         ...this.data,
-        [data.requestId]: {
-          ...this.data[data.requestId],
-          response: {
-            responseData: data.response,
-          },
-        },
+        [data.requestId]: updatedRequest,
       };
+  
       this.requestUpdate();
     }
   }
+  
 
   render() {
     console.log(
