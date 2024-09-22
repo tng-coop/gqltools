@@ -7,7 +7,6 @@ import { JsonModal } from "./json-modal";
 
 @customElement("graphql-row")
 export class GraphqlRow extends LitElement {
-  @property({ type: Object }) headerData: Record<string, string> = {};
   @property({ type: Number }) requestId?: number;
   @property({ type: Number }) port?: number;
   @property({ type: String }) portDescription?: string;

@@ -5,15 +5,8 @@ import { eventBus } from "./event-bus";
 import { repeat } from "lit/directives/repeat.js";
 import { FilterChangeEvent } from "./filter-input";
 
-interface HeaderData {
-  user_id: string;
-  role: string;
-  account_id: string;
-}
-
 interface GraphQLData {
   jwt: {
-    headerData: HeaderData;
     authorizationHeader: string;
   };
   request: {
@@ -54,11 +47,6 @@ export class GraphqlDataContainer extends LitElement {
     window.electron.onGraphqlDetected((event, data) => {
       this._handleGraphqlDetected({
         requestId: data.requestId,
-        headerData: {
-          user_id: "N/A",
-          role: "N/A",
-          account_id: "N/A",
-        },
         requestData: data.request,
         authorizationHeader: data.headers["authorization"],
         port: data.port,
@@ -113,7 +101,6 @@ export class GraphqlDataContainer extends LitElement {
 
   private _handleGraphqlDetected(data: {
     requestId: number;
-    headerData: HeaderData;
     requestData: string;
     authorizationHeader: string;
     port: number;
@@ -122,7 +109,6 @@ export class GraphqlDataContainer extends LitElement {
     // Add the new data
     this.data[data.requestId] = {
       jwt: {
-        headerData: data.headerData,
         authorizationHeader: data.authorizationHeader,
       },
       request: {
@@ -233,7 +219,6 @@ export class GraphqlDataContainer extends LitElement {
           const { jwt, request, response } = this.data[requestId];
           return html`
             <graphql-row
-              .headerData="${jwt.headerData || ""}"
               .requestData="${request.requestData || ""}"
               .port="${request.port}"
               .portDescription="${request.portDescription}"
