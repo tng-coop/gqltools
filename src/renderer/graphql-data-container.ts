@@ -51,10 +51,10 @@ export class GraphqlDataContainer extends LitElement {
       });
     });
 
-    window.electron.onGraphqlResponse((event, data) => {
+    window.electron.onGraphqlResponse((_event, detectedGraphqlRequest) => {
       this._handleGraphqlResponse({
-        requestId: data.requestId,
-        response: data.response,
+        requestId: detectedGraphqlRequest.requestId,
+        response: detectedGraphqlRequest.response,
       });
     });
 
@@ -96,7 +96,7 @@ export class GraphqlDataContainer extends LitElement {
     this.requestUpdate();
   }
 
-  private _handleGraphqlDetected(data: {
+  private _handleGraphqlDetected(detectedGraphqlRequest: {
     requestId: number;
     requestData: string;
     authorizationHeader: string;
@@ -104,28 +104,30 @@ export class GraphqlDataContainer extends LitElement {
     portDescription: string;
   }): void {
     // Add the new data
-    this.graphqlRequests[data.requestId] = { // Updated from 'this.data' to 'this.graphqlRequests'
+    this.graphqlRequests[detectedGraphqlRequest.requestId] = {
       jwt: {
-        authorizationHeader: data.authorizationHeader,
+        authorizationHeader: detectedGraphqlRequest.authorizationHeader,
       },
       request: {
-        requestData: data.requestData,
-        port: data.port,
-        portDescription: data.portDescription,
+        requestData: detectedGraphqlRequest.requestData,
+        port: detectedGraphqlRequest.port,
+        portDescription: detectedGraphqlRequest.portDescription,
       },
     };
-
+  
     // If more than 1000 elements, keep only the top 1000 highest requestIds
-    const keys = Object.keys(this.graphqlRequests).map(Number); // Updated from 'this.data' to 'this.graphqlRequests'
+    const keys = Object.keys(this.graphqlRequests).map(Number);
     const maxLength = 1000;
     if (keys.length > maxLength) {
       const topKeys = keys.sort((a, b) => b - a).slice(0, maxLength);
       this.graphqlRequests = topKeys.reduce((acc, key) => {
-        acc[key] = this.graphqlRequests[key]; // Updated from 'this.data' to 'this.graphqlRequests'
+        acc[key] = this.graphqlRequests[key];
         return acc;
       }, {} as typeof this.graphqlRequests);
     }
   }
+  
+  
 
   private _handleGraphqlResponse(data: {
     requestId: number;

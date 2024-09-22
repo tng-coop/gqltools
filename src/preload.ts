@@ -31,6 +31,13 @@ const defaultConfig: AppConfig = {
 // Use the parsed config if available, otherwise fall back to the default
 const finalConfig: AppConfig = config || defaultConfig;
 
+interface proxyRequest {
+  requestId: number;
+  response: string;
+  port: number;
+  portDescription: string;
+}
+
 contextBridge.exposeInMainWorld("electron", {
   toggleMaximize: () => {
     ipcRenderer.send("toggle-maximize");
@@ -72,12 +79,7 @@ contextBridge.exposeInMainWorld("electron", {
   onGraphqlResponse: (
     callback: (
       event: IpcRendererEvent, // Correctly reference the imported IpcRendererEvent
-      data: {
-        requestId: number;
-        response: string;
-        port: number;
-        portDescription: string;
-      },
+      data: proxyRequest,
     ) => void,
   ) => {
     ipcRenderer.on("graphql-response", (event: IpcRendererEvent, data: unknown) => {
@@ -89,12 +91,7 @@ contextBridge.exposeInMainWorld("electron", {
       ) {
         callback(
           event,
-          data as {
-            requestId: number;
-            response: string;
-            port: number;
-            portDescription: string;
-          },
+          data as proxyRequest,
         );
       } else {
         console.error("Received invalid graphql-response data:", data);
