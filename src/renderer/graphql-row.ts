@@ -13,7 +13,7 @@ export class GraphqlRow extends LitElement {
   @property({ type: String }) requestData = "";
   @property({ type: String }) responseData = "Waiting for response...";
   @property({ type: String }) authorizationHeader = ""; // Authorization header
-  @property({ type: String }) processedAuthorizationData = ""; // Decoded JWT or processed data
+  @property({ type: String }) parsedJwt = ""; // Decoded JWT or processed data
   @property({ type: String }) filterableText = ""; // Text used for filtering
   @property({ type: String }) operationType = ""; // Type of GraphQL operation (query, mutation, subscription)
   @property({ type: String }) operationName = ""; // Name of the GraphQL operation
@@ -96,7 +96,7 @@ export class GraphqlRow extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.updateFilterableText();
+    this.updateProperties();
   }
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -110,12 +110,12 @@ export class GraphqlRow extends LitElement {
       changedProperties.has("highlightValue") || // Re-run when highlightValue changes
       changedProperties.has("isRegex") // Re-run when isRegex changes
     ) {
-      this.updateFilterableText();
+      this.updateProperties();
       this.requestUpdate();
     }
   }
 
-  private updateFilterableText() {
+  private updateProperties() {
     const rdstring: string = this.requestData as unknown as string;
     // If blank, return
     if (!rdstring) {
@@ -129,7 +129,7 @@ export class GraphqlRow extends LitElement {
 
     this.operationType = this.extractOperationType(rdparsed.query);
     this.filterableText =
-      `${this.processedAuthorizationData} ${this.requestData} ${this.responseData}`.toLowerCase();
+      `${this.parsedJwt} ${this.requestData} ${this.responseData}`.toLowerCase();
     const rdparsedWithoutQuery = {
       operationName: rdparsed.operationName,
       variables: rdparsed.variables,
@@ -148,6 +148,7 @@ export class GraphqlRow extends LitElement {
       parsedResponse2 = parsedResponse;
     }
     this.formattedResponse = JSON.stringify(parsedResponse2, null, 2);
+    this.parsedJwt = this.parseJwt(this.authorizationHeader);
   }
 
   private extractOperationType(query: string): string {
@@ -181,6 +182,24 @@ export class GraphqlRow extends LitElement {
       return content;
     }
   }
+  private parseJwt(token: string): string {
+    try {
+      const base64Url: string = token.split(".")[1];
+      const base64: string = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload: string = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(""),
+      );
+
+      const payload: unknown = JSON.parse(jsonPayload) as unknown;
+      return JSON.stringify(payload, null, 2);
+    } catch {
+      return "Invalid JWT";
+    }
+  }
+
 
   private escapeRegex(text: string): string {
     return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -204,11 +223,11 @@ export class GraphqlRow extends LitElement {
         <div class="graphql-box-container" style="display: flex; flex-direction: row; flex-grow: 1;">
           <jwt-authorization-cell
             class="graphql-box header-box"
-            .jwt="${this?.authorizationHeader || ""}"
-            @processed-authorization-data="${(event: CustomEvent<string>) =>
-              this.handleProcessedAuthorizationData(event)}"
+            .jwt="${this.parsedJwt || ""}"
             @click="${(event: Event) => this.handleClick(event)}"
-            data-column="header"
+            data-column="jwt"
+            data-jwt-parsed="${this.parsedJwt}"
+            data-jwt-raw="${this.authorizationHeader}"
             style="margin-right: 10px;"
           ></jwt-authorization-cell>
           
@@ -234,14 +253,21 @@ export class GraphqlRow extends LitElement {
     return retval;
   }
 
-  private handleProcessedAuthorizationData(event: CustomEvent<string>) {
-    this.processedAuthorizationData = event.detail;
-    this.updateFilterableText();
-  }
 
   private async handleClick(event: Event): Promise<void> {
     const cell = event.currentTarget as HTMLElement;
     const column = cell.dataset.column;
+
+    if (column === "jwt") {
+      const jsonModal = document.querySelector("json-modal") as JsonModal;
+      if (jsonModal) {
+        jsonModal.graphqlJson = false;
+        jsonModal.jsonContent = cell.dataset.jwtParsed || "";
+        jsonModal.open = true;
+        await navigator.clipboard.writeText(cell.dataset.jwtRaw || "");
+        jsonModal.requestUpdate();
+      }
+    }
 
     if (column === "request" || column === "response") {
       const jsonModal = document.querySelector("json-modal") as JsonModal;

@@ -109,8 +109,10 @@ test("verify JWT popup", async () => {
   const clipboardText = await electronApp.evaluate(({ clipboard }: { clipboard: Electron.Clipboard }) => {
     return clipboard.readText();
 });
-
   expect(clipboardText).toContain("Bearer eyJ");
+  await expect(window.getByText('×')).toBeVisible();
+  await window.getByText('×').click();
+  await expect(window.getByText('×')).not.toBeVisible();
 });
 
 test("verify request popup", async () => {
