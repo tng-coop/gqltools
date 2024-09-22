@@ -318,6 +318,34 @@ test("filter by port 8081 to display matching requests", async () => {
   await checkbox8081.uncheck();
 });
 
+
+test("filter by JWT to check for username key presence", async () => {
+  // Enter a filter tag for a known key presence, such as "username"
+  await window.getByPlaceholder("Enter your filter tag").fill("username");
+  
+  // Set the filter to apply to JWT content
+  await window.getByLabel("JWT").setChecked(true);
+
+  // Expect matching rows to be displayed (adjust the count based on your data)
+  await expect(window.locator("graphql-row")).toHaveCount(6); // Example count, adjust based on your data
+
+  // Check if the JWTs contain the 'username' key
+  for (let i = 0; i < await window.locator("graphql-row").count(); i++) {
+    const jwtContent = await window
+      .locator("graphql-row")
+      .nth(i)
+      .getByTestId("jwt-box")
+      .textContent();
+
+    if (jwtContent) {
+      // Check if the JWT content includes the key "username" without parsing the JSON
+      expect(jwtContent.includes('"username"')).toBeTruthy();
+    } else {
+      throw new Error("Could not find the JWT content");
+    }
+  }
+});
+
 test("clear all filters to remove all data", async () => {
   const clearButton = window.getByRole("button", { name: "Clear All" });
   await clearButton.click();

@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { property, state } from "lit/decorators.js";
+import { state } from "lit/decorators.js";
 import { css } from "lit";
 import { baseInputStyles } from "./shared-styles"; // Adjust the path as necessary
 import { eventBus } from "./event-bus";
@@ -21,6 +21,7 @@ interface FilterChangeDetail {
   regexEnabled: boolean;
   scanRequest: boolean;
   scanResponse: boolean;
+  scanJwtFormatted: boolean; // New flag added here
   proxyServersEnabled: Record<number, boolean>; // Add proxy servers' state to the event detail
 }
 
@@ -45,6 +46,7 @@ class FilterInput extends LitElement {
   @state() regexEnabled = false;
   @state() scanRequest = true;
   @state() scanResponse = true;
+  @state() scanJwtFormatted = false; // Initialize the new state
   @state() proxyServersEnabled: Record<number, boolean> = {}; // Initialize as an empty object
 
   constructor() {
@@ -52,7 +54,6 @@ class FilterInput extends LitElement {
     console.log('const called')
     // Access the config from the main process at the beginning
     const config: AppConfig = window.electron.getConfig() as AppConfig;
-    // console.log("Config received in renderer:", config);
 
     // Safely initialize states from localStorage
     const storedFilterTag = localStorage.getItem("filter-tag");
@@ -67,6 +68,10 @@ class FilterInput extends LitElement {
     const storedScanResponse = localStorage.getItem("scan-response");
     this.scanResponse = storedScanResponse ? JSON.parse(storedScanResponse) === true : true;
 
+    // Initialize the new state from localStorage
+    const storedScanJwtFormatted = localStorage.getItem("scan-jwt-formatted");
+    this.scanJwtFormatted = storedScanJwtFormatted ? JSON.parse(storedScanJwtFormatted) === true : false;
+
     // Initialize proxy server states (enabled/disabled) based on the config and localStorage
     if (config) {
       config.proxyServers.forEach((server: ProxyServerConfig) => {
@@ -77,6 +82,8 @@ class FilterInput extends LitElement {
         };
       });
     }
+
+    // Dispatch initial event
     const filterChangeEvent: FilterChangeEvent =
     new CustomEvent<FilterChangeDetail>("filter-change", {
       detail: {
@@ -84,6 +91,7 @@ class FilterInput extends LitElement {
         regexEnabled: this.regexEnabled,
         scanRequest: this.scanRequest,
         scanResponse: this.scanResponse,
+        scanJwtFormatted: this.scanJwtFormatted, // Include the new flag
         proxyServersEnabled: this.proxyServersEnabled, // Include proxy server states
       },
     });
@@ -119,6 +127,13 @@ class FilterInput extends LitElement {
             JSON.stringify(this.scanResponse),
           );
           break;
+        case "jwt-checkbox": // Handle the new checkbox
+          this.scanJwtFormatted = input.checked;
+          localStorage.setItem(
+            "scan-jwt-formatted",
+            JSON.stringify(this.scanJwtFormatted),
+          );
+          break;
         default:
           if (input.id.startsWith("proxy-port-")) {
             const port = Number(input.value);
@@ -130,16 +145,14 @@ class FilterInput extends LitElement {
               `proxy-enabled-${port}`,
               JSON.stringify(input.checked),
             ); // Store the state for the proxy server
-            // console.log(
-            //   `Proxy server at port ${port} is now ${input.checked ? "enabled" : "disabled"}`,
-            // );
           }
       }
     } else {
       this.filterTag = input.value.toLowerCase();
       localStorage.setItem("filter-tag", this.filterTag);
     }
-    // Step 3: Dispatching an event with the current filter tag, regex, request, response, and proxy server states
+
+    // Step 3: Dispatching an event with the current filter tag, regex, request, response, jwtFormatted, and proxy server states
     const filterChangeEvent: FilterChangeEvent =
       new CustomEvent<FilterChangeDetail>("filter-change", {
         detail: {
@@ -147,6 +160,7 @@ class FilterInput extends LitElement {
           regexEnabled: this.regexEnabled,
           scanRequest: this.scanRequest,
           scanResponse: this.scanResponse,
+          scanJwtFormatted: this.scanJwtFormatted, // Include the new flag
           proxyServersEnabled: this.proxyServersEnabled, // Include proxy server states
         },
       });
@@ -165,6 +179,7 @@ class FilterInput extends LitElement {
           .value=${this.filterTag}
           @input=${this._handleInput}
         />
+
         <input
           id="regex-checkbox"
           type="checkbox"
@@ -172,6 +187,16 @@ class FilterInput extends LitElement {
           @change=${this._handleInput}
         />
         <label for="regex-checkbox">Regex</label>
+        
+        <!-- Adding JWT Formatted Checkbox -->
+        <input
+          id="jwt-checkbox"
+          type="checkbox"
+          .checked=${this.scanJwtFormatted}
+          @change=${this._handleInput}
+        />
+        <label for="jwt-checkbox">JWT</label>
+        
         <!-- Adding Request Checkbox -->
         <input
           id="request-checkbox"
@@ -180,6 +205,7 @@ class FilterInput extends LitElement {
           @change=${this._handleInput}
         />
         <label for="request-checkbox">Request</label>
+        
         <!-- Adding Response Checkbox -->
         <input
           id="response-checkbox"

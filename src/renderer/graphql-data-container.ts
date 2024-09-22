@@ -31,6 +31,7 @@ export class GraphqlDataContainer extends LitElement {
   @state() graphqlRequests: Record<number, GraphQLData> = {}; // Updated name from 'data' to 'graphqlRequests'
   @state() filterQuery = "";
   @state() filterRegex = false;
+  @state() filterJwtFormatted = true; // New state to control filtering based on jwtFormatted
   @state() filterRequest = true;
   @state() filterResponse = true;
   @state() proxyServersEnabled: Record<number, boolean> = {}; // Add state to track enabled proxy servers
@@ -76,14 +77,16 @@ export class GraphqlDataContainer extends LitElement {
       scanRequest,
       scanResponse,
       proxyServersEnabled,
+      scanJwtFormatted, // New property for scanning jwtFormatted
     } = event.detail;
     this.filterQuery = filterTag;
     this.filterRegex = regexEnabled;
     this.filterRequest = scanRequest;
     this.filterResponse = scanResponse;
+    this.filterJwtFormatted = scanJwtFormatted; // Set the state for jwtFormatted filtering
     this.proxyServersEnabled = proxyServersEnabled;
     console.log(
-      `New settings: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}, Proxy Servers: ${JSON.stringify(this.proxyServersEnabled)}`,
+      `New settings: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}, JWT: ${this.filterJwtFormatted}, Proxy Servers: ${JSON.stringify(this.proxyServersEnabled)}`,
     );
     this.requestUpdate(); // Request update after change
   }
@@ -129,7 +132,7 @@ export class GraphqlDataContainer extends LitElement {
     requestId: number;
     response: string;
   }): void {
-    const existingRequest: GraphQLData | undefined = this.graphqlRequests[data.requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+    const existingRequest: GraphQLData | undefined = this.graphqlRequests[data.requestId];
 
     if (existingRequest) {
       const updatedResponse: ResponseData = { responseData: data.response };
@@ -167,49 +170,54 @@ export class GraphqlDataContainer extends LitElement {
 
   render() {
     console.log(
-      `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
+      `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, JWT: ${this.filterJwtFormatted}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
     );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
 
-    const keys = Object.keys(this.graphqlRequests); // Updated from 'this.data' to 'this.graphqlRequests'
+    const keys = Object.keys(this.graphqlRequests);
     const numericKeys = keys.map((key) => Number(key)); // Convert keys to numbers
     
     const filteredIds: number[] = [];
     
     for (const requestId of numericKeys) {
-      const graphqlData: GraphQLData | undefined = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+      const graphqlData: GraphQLData | undefined = this.graphqlRequests[requestId];
     
       if (!graphqlData) {
         continue; // Skip if there's no data for this requestId
       }
     
-      const { request, response } = graphqlData;
+      const { jwtFormatted, request, response } = graphqlData;
     
       if (!this.proxyServersEnabled[request.port]) {
         continue; // Skip this request if its port is disabled
       }
     
-      const { filterRequest, filterResponse } = this;
+      const { filterJwtFormatted, filterRequest, filterResponse } = this;
+    
       const requestData = request.requestData;
       const responseData = response?.responseData;
     
       if (regex) {
+        const matchesJwtFormatted = filterJwtFormatted && regex.test(jwtFormatted);
         const matchesRequest = filterRequest && regex.test(requestData);
         const matchesResponse = filterResponse && responseData ? regex.test(responseData) : false;
     
-        if (matchesRequest || matchesResponse) {
+        if (matchesJwtFormatted || matchesRequest || matchesResponse) {
           filteredIds.push(requestId);
         }
         continue;
       }
     
       const lowerCaseQuery = this.filterQuery.toLowerCase();
+    
+      const jwtFormattedIncludesQuery = filterJwtFormatted &&
+        jwtFormatted.toLowerCase().includes(lowerCaseQuery);
       const requestDataIncludesQuery = filterRequest &&
         request.requestData.toLowerCase().includes(lowerCaseQuery);
       const responseDataIncludesQuery = filterResponse &&
         (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false);
     
-      if (requestDataIncludesQuery || responseDataIncludesQuery) {
+      if (jwtFormattedIncludesQuery || requestDataIncludesQuery || responseDataIncludesQuery) {
         filteredIds.push(requestId);
       }
     }
@@ -218,7 +226,7 @@ export class GraphqlDataContainer extends LitElement {
     
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-in-memory", {
-        detail: { count: Object.keys(this.graphqlRequests).length }, // Updated from 'this.data' to 'this.graphqlRequests'
+        detail: { count: Object.keys(this.graphqlRequests).length },
       }),
     );
 
@@ -232,7 +240,7 @@ export class GraphqlDataContainer extends LitElement {
       ${repeat(
         filteredIds,
         (requestId) => {
-          const { response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+          const { response } = this.graphqlRequests[requestId];
           return (
             requestId.toString() +
             "-" +
@@ -244,14 +252,14 @@ export class GraphqlDataContainer extends LitElement {
           );
         },
         (requestId) => {
-          const { jwtFormatted, jwt, request, response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+          const { jwtFormatted, jwt, request, response } = this.graphqlRequests[requestId];
           return html`
             <graphql-row
               .requestData="${request.requestData || ""}"
               .port="${request.port}"
               .portDescription="${request.portDescription}"
               .responseData="${response?.responseData || ""}"
-              .jwtFormatted="${jwtFormatted}" 
+              .jwtFormatted="${jwtFormatted}"
               .jwtRaw="${jwt.authorizationHeader}"
               .requestId="${requestId}"
               .highlightValue="${this.filterQuery}"
