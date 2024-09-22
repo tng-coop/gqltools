@@ -6,17 +6,23 @@ import { repeat } from "lit/directives/repeat.js";
 import { FilterChangeEvent } from "./filter-input";
 
 interface GraphQLData {
-  jwt: {
-    authorizationHeader: string;
-  };
-  request: {
-    requestData: string;
-    port: number;
-    portDescription: string;
-  };
-  response?: {
-    responseData: string;
-  };
+  jwt: JwtData;
+  request: RequestData;
+  response?: ResponseData;
+}
+
+interface JwtData {
+  authorizationHeader: string;
+}
+
+interface RequestData {
+  requestData: string;
+  port: number;
+  portDescription: string;
+}
+
+interface ResponseData {
+  responseData: string;
 }
 
 @customElement("graphql-data-container")
@@ -109,18 +115,17 @@ export class GraphqlDataContainer extends LitElement {
       },
     };
   
-    // If more than 5 elements, keep only the top 5 highest requestIds
+    // If more than 1000 elements, keep only the top 1000 highest requestIds
     const keys = Object.keys(this.data).map(Number);
-    const maxLength=1000
+    const maxLength = 1000;
     if (keys.length > maxLength) {
-      const top5Keys = keys.sort((a, b) => b - a).slice(0, maxLength);
-      this.data = top5Keys.reduce((acc, key) => {
+      const topKeys = keys.sort((a, b) => b - a).slice(0, maxLength);
+      this.data = topKeys.reduce((acc, key) => {
         acc[key] = this.data[key];
         return acc;
       }, {} as typeof this.data);
     }
   }
-  
 
   private _handleGraphqlResponse(data: {
     requestId: number;
@@ -139,6 +144,7 @@ export class GraphqlDataContainer extends LitElement {
       this.requestUpdate();
     }
   }
+
   render() {
     console.log(
       `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
@@ -166,13 +172,12 @@ export class GraphqlDataContainer extends LitElement {
         }
         // Fallback to simple includes method based on filterRequest and filterResponse flags
         const lowerCaseQuery = this.filterQuery.toLowerCase();
-        console.log('lowerCaseQuery', lowerCaseQuery)
+        console.log('lowerCaseQuery', lowerCaseQuery);
         return (
           (this.filterRequest &&
             request.requestData.toLowerCase().includes(lowerCaseQuery)) ||
           (this.filterResponse &&
-            (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ??
-              false))
+            (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false))
         );
       })
       .sort((a, b) => b - a);
@@ -224,5 +229,4 @@ export class GraphqlDataContainer extends LitElement {
       )}
     `;
   }
-  
 }
