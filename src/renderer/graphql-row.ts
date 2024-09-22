@@ -176,7 +176,7 @@ export class GraphqlRow extends LitElement {
         pattern,
         '<span class="highlighted-text">$&</span>' // Wrap matched text in a highlighted span
       );
-    } catch (e) {
+    } catch {
       // Return original content if regex is invalid
       return content;
     }
