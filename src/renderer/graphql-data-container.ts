@@ -158,36 +158,44 @@ export class GraphqlDataContainer extends LitElement {
     );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
   
-    const filteredIds = Object.keys(this.data)
-      .map(Number)
-      .filter((requestId) => {
-        const { request, response } = this.data[requestId];
+    const filteredIds: number[] = Object.keys(this.data)
+    .map((key) => Number(key))
+    .filter((requestId: number) => {
+      const graphqlData: GraphQLData | undefined = this.data[requestId];
   
-        // Check if the port is enabled before filtering further
-        if (!this.proxyServersEnabled[request.port]) {
-          return false; // Skip this request if its port is disabled
-        }
+      if (!graphqlData) {
+        return false; // Skip if there's no data for this requestId
+      }
   
-        if (regex) {
-          // Use regex for filtering based on filterRequest and filterResponse flags
-          return (
-            (this.filterRequest && regex.test(request.requestData)) ||
-            (this.filterResponse &&
-              response?.responseData &&
-              regex.test(response.responseData))
-          );
-        }
-        // Fallback to simple includes method based on filterRequest and filterResponse flags
-        const lowerCaseQuery = this.filterQuery.toLowerCase();
-        console.log('lowerCaseQuery', lowerCaseQuery);
+      const { request, response } = graphqlData;
+  
+      // Check if the port is enabled before filtering further
+      if (!this.proxyServersEnabled[request.port]) {
+        return false; // Skip this request if its port is disabled
+      }
+  
+      // Handle filtering logic using regex if enabled
+      if (regex) {
         return (
-          (this.filterRequest &&
-            request.requestData.toLowerCase().includes(lowerCaseQuery)) ||
+          (this.filterRequest && regex.test(request.requestData)) ||
           (this.filterResponse &&
-            (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false))
+            response?.responseData &&
+            regex.test(response.responseData))
         );
-      })
-      .sort((a, b) => b - a);
+      }
+  
+      // Fallback to simple includes method based on filterRequest and filterResponse flags
+      const lowerCaseQuery = this.filterQuery.toLowerCase();
+  
+      return (
+        (this.filterRequest &&
+          request.requestData.toLowerCase().includes(lowerCaseQuery)) ||
+        (this.filterResponse &&
+          (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false))
+      );
+    })
+    .sort((a, b) => b - a);
+  
   
     // Dispatch the event to update the number of requests in memory
     eventBus.dispatchEvent(
