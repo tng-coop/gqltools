@@ -130,7 +130,7 @@ export class GraphqlRow extends LitElement {
 
     this.operationType = this.extractOperationType(rdparsed.query);
     this.filterableText =
-      `${this.parsedJwtPacked} ${this.requestData} ${this.responseData}`.toLowerCase();
+      `${this.parsedJwtPacked} ${this.formattedRequestVar} ${this.responseData}`.toLowerCase();
     const rdparsedWithoutQuery = {
       operationName: rdparsed.operationName,
       variables: rdparsed.variables,
@@ -150,7 +150,7 @@ export class GraphqlRow extends LitElement {
     }
     this.formattedResponse = JSON.stringify(parsedResponse2, null, 2);
     this.parsedJwtPacked = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 0);
-    this.parsedJwtFormatted= JSON.stringify(this.parseJwt(this.authorizationHeader), null, 2);
+    this.parsedJwtFormatted = JSON.stringify(this.parseJwt(this.authorizationHeader), null, 2);
   }
 
   private extractOperationType(query: string): string {
@@ -184,7 +184,7 @@ export class GraphqlRow extends LitElement {
       return content;
     }
   }
-  private parseJwt(token: string): unknown{
+  private parseJwt(token: string): unknown {
     try {
       const base64Url: string = token.split(".")[1];
       const base64: string = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -211,6 +211,7 @@ export class GraphqlRow extends LitElement {
     // Highlight the request and response content based on the regex pattern
     const highlightedRequest = this.highlightText(this.formattedRequestVar);
     const highlightedResponse = this.highlightText(this.formattedResponse);
+    const highlightedJwt = this.highlightText(this.parsedJwtFormatted);
 
     // prettier-ignore
     const retval = html`
@@ -223,15 +224,16 @@ export class GraphqlRow extends LitElement {
         
         <!-- Box container with horizontal flex layout for JWT, request, response -->
         <div class="graphql-box-container" style="display: flex; flex-direction: row; flex-grow: 1;">
-          <jwt-authorization-cell
-            class="graphql-box header-box"
+          <div
+            class="graphql-box response-box"
             .jwt="${this.parsedJwtFormatted || ""}"
             @click="${(event: Event) => this.handleClick(event)}"
             data-column="jwt"
+            data-testid="jwt-box"
             data-jwt-parsed="${this.parsedJwtFormatted}"
             data-jwt-raw="${this.authorizationHeader}"
             style="margin-right: 10px;"
-          ></jwt-authorization-cell>
+          >${unsafeHTML(highlightedJwt)}</div> <!-- Use unsafeHTML for highlightedResponse -->
           
           <div
             class="graphql-box request-box"

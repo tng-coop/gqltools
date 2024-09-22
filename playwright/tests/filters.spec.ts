@@ -62,7 +62,7 @@ test("verify initial data loading", async () => {
   const jsonTxt1 = await window
     .locator("graphql-row")
     .nth(0)
-    .getByTestId("jwt-container")
+    .getByTestId("jwt-box")
     .textContent();
   const jsonTxt2 = await window
     .locator("graphql-row")
@@ -93,6 +93,7 @@ test("verify initial data loading", async () => {
         name: string;
       }[];
   };
+  console.log(jsonTxt1)
   expect(json1.username).toBe("admin");
   expect(json2.operationName).toBe("GetUsers");
   expect(json3.users[0].name).toBe("Alice");
@@ -104,7 +105,7 @@ test("verify default view displays all data", async () => {
 
 test("verify JWT popup", async () => {
   await expect(window.locator("graphql-row")).toHaveCount(6); // Adjust based on your data
-  await window.getByTestId('jwt-container').nth(0).click();
+  await window.getByTestId('jwt-box').nth(0).click();
   // Use Electron's clipboard module to check the clipboard content
   const clipboardText = await electronApp.evaluate(({ clipboard }: { clipboard: Electron.Clipboard }) => {
     return clipboard.readText();
