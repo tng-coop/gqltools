@@ -19,15 +19,6 @@ interface GraphQLData {
   };
 }
 
-interface ProxyServerConfig {
-  port: number;
-  description: string;
-}
-
-interface AppConfig {
-  proxyServers: ProxyServerConfig[];
-}
-
 @customElement("graphql-data-container")
 export class GraphqlDataContainer extends LitElement {
   @state() data: Record<number, GraphQLData> = {};
