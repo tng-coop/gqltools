@@ -27,7 +27,7 @@ interface ResponseData {
 
 @customElement("graphql-data-container")
 export class GraphqlDataContainer extends LitElement {
-  @state() data: Record<number, GraphQLData> = {};
+  @state() graphqlRequests: Record<number, GraphQLData> = {}; // Updated name from 'data' to 'graphqlRequests'
   @state() filterQuery = "";
   @state() filterRegex = false;
   @state() filterRequest = true;
@@ -92,7 +92,7 @@ export class GraphqlDataContainer extends LitElement {
   }
 
   public clear(): void {
-    this.data = {};
+    this.graphqlRequests = {}; // Updated from 'this.data' to 'this.graphqlRequests'
     this.requestUpdate();
   }
 
@@ -104,7 +104,7 @@ export class GraphqlDataContainer extends LitElement {
     portDescription: string;
   }): void {
     // Add the new data
-    this.data[data.requestId] = {
+    this.graphqlRequests[data.requestId] = { // Updated from 'this.data' to 'this.graphqlRequests'
       jwt: {
         authorizationHeader: data.authorizationHeader,
       },
@@ -116,14 +116,14 @@ export class GraphqlDataContainer extends LitElement {
     };
 
     // If more than 1000 elements, keep only the top 1000 highest requestIds
-    const keys = Object.keys(this.data).map(Number);
+    const keys = Object.keys(this.graphqlRequests).map(Number); // Updated from 'this.data' to 'this.graphqlRequests'
     const maxLength = 1000;
     if (keys.length > maxLength) {
       const topKeys = keys.sort((a, b) => b - a).slice(0, maxLength);
-      this.data = topKeys.reduce((acc, key) => {
-        acc[key] = this.data[key];
+      this.graphqlRequests = topKeys.reduce((acc, key) => {
+        acc[key] = this.graphqlRequests[key]; // Updated from 'this.data' to 'this.graphqlRequests'
         return acc;
-      }, {} as typeof this.data);
+      }, {} as typeof this.graphqlRequests);
     }
   }
 
@@ -132,7 +132,7 @@ export class GraphqlDataContainer extends LitElement {
     response: string;
   }): void {
     // Type-safe access to the existing request data
-    const existingRequest: GraphQLData | undefined = this.data[data.requestId];
+    const existingRequest: GraphQLData | undefined = this.graphqlRequests[data.requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
 
     if (existingRequest) {
       const updatedResponse: ResponseData = { responseData: data.response };
@@ -142,8 +142,8 @@ export class GraphqlDataContainer extends LitElement {
       };
 
       // Update the state with the modified data
-      this.data = {
-        ...this.data,
+      this.graphqlRequests = { // Updated from 'this.data' to 'this.graphqlRequests'
+        ...this.graphqlRequests,
         [data.requestId]: updatedRequest,
       };
 
@@ -158,13 +158,13 @@ export class GraphqlDataContainer extends LitElement {
     );
     const regex = this.filterRegex ? new RegExp(this.filterQuery, "i") : null;
 
-    const keys = Object.keys(this.data); // Get all keys from the data object
+    const keys = Object.keys(this.graphqlRequests); // Updated from 'this.data' to 'this.graphqlRequests'
     const numericKeys = keys.map((key) => Number(key)); // Convert keys to numbers
     
     const filteredIds: number[] = [];
     
     for (const requestId of numericKeys) {
-      const graphqlData: GraphQLData | undefined = this.data[requestId];
+      const graphqlData: GraphQLData | undefined = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
     
       if (!graphqlData) {
         continue; // Skip if there's no data for this requestId
@@ -215,12 +215,10 @@ export class GraphqlDataContainer extends LitElement {
     // Sort the filteredIds in descending order
     filteredIds.sort((a, b) => b - a);
     
-
-
     // Dispatch the event to update the number of requests in memory
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-in-memory", {
-        detail: { count: Object.keys(this.data).length },
+        detail: { count: Object.keys(this.graphqlRequests).length }, // Updated from 'this.data' to 'this.graphqlRequests'
       }),
     );
 
@@ -235,7 +233,7 @@ export class GraphqlDataContainer extends LitElement {
       ${repeat(
       filteredIds,
       (requestId) => {
-        const { response } = this.data[requestId];
+        const { response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
         return (
           requestId.toString() +
           "-" +
@@ -247,7 +245,7 @@ export class GraphqlDataContainer extends LitElement {
         );
       },
       (requestId) => {
-        const { jwt, request, response } = this.data[requestId];
+        const { jwt, request, response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
         return html`
             <graphql-row
               .requestData="${request.requestData || ""}"
