@@ -9,6 +9,7 @@ interface GraphQLData {
   jwt: JwtData;
   request: RequestData;
   response?: ResponseData;
+  jwtFormatted: string; // Add jwtFormatted property to GraphQLData
 }
 
 interface JwtData {
@@ -40,7 +41,6 @@ export class GraphqlDataContainer extends LitElement {
   }
 
   private _addEventListeners(): void {
-    // Listening for events from window.electron (native events)
     window.electron.onGraphqlDetected((event, data) => {
       this._handleGraphqlDetected({
         requestId: data.requestId,
@@ -58,7 +58,6 @@ export class GraphqlDataContainer extends LitElement {
       });
     });
 
-    // Listening for events via the event bus
     eventBus.addEventListener(
       "clear-data",
       this.clear.bind(this) as EventListener,
@@ -71,20 +70,18 @@ export class GraphqlDataContainer extends LitElement {
 
   private _handleFilterChange(event: FilterChangeEvent): void {
     console.log("Filter change event received in graphql-data-container");
-    // Access the correctly typed detail object
     const {
       filterTag,
       regexEnabled,
       scanRequest,
       scanResponse,
       proxyServersEnabled,
-    } = event.detail; // Include proxyServersEnabled from event
-    // Now you can use `filterTag` and `regexEnabled` with confidence
-    this.filterQuery = filterTag; // Correctly assign filterTag to filterQuery
-    this.filterRegex = regexEnabled; // Correctly assign regexEnabled to filterRegex
-    this.filterRequest = scanRequest; // Correctly assign scanRequest to filterRequest
-    this.filterResponse = scanResponse; // Correctly assign scanResponse to filterResponse
-    this.proxyServersEnabled = proxyServersEnabled; // Set the state for enabled/disabled proxy servers
+    } = event.detail;
+    this.filterQuery = filterTag;
+    this.filterRegex = regexEnabled;
+    this.filterRequest = scanRequest;
+    this.filterResponse = scanResponse;
+    this.proxyServersEnabled = proxyServersEnabled;
     console.log(
       `New settings: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}, Proxy Servers: ${JSON.stringify(this.proxyServersEnabled)}`,
     );
@@ -103,7 +100,8 @@ export class GraphqlDataContainer extends LitElement {
     port: number;
     portDescription: string;
   }): void {
-    // Add the new data
+    const jwtFormatted = JSON.stringify(this.parseJwt(detectedGraphqlRequest.authorizationHeader), null, 2);
+
     this.graphqlRequests[detectedGraphqlRequest.requestId] = {
       jwt: {
         authorizationHeader: detectedGraphqlRequest.authorizationHeader,
@@ -113,9 +111,9 @@ export class GraphqlDataContainer extends LitElement {
         port: detectedGraphqlRequest.port,
         portDescription: detectedGraphqlRequest.portDescription,
       },
+      jwtFormatted, // Store formatted JWT here
     };
-  
-    // If more than 1000 elements, keep only the top 1000 highest requestIds
+
     const keys = Object.keys(this.graphqlRequests).map(Number);
     const maxLength = 1000;
     if (keys.length > maxLength) {
@@ -126,14 +124,11 @@ export class GraphqlDataContainer extends LitElement {
       }, {} as typeof this.graphqlRequests);
     }
   }
-  
-  
 
   private _handleGraphqlResponse(data: {
     requestId: number;
     response: string;
   }): void {
-    // Type-safe access to the existing request data
     const existingRequest: GraphQLData | undefined = this.graphqlRequests[data.requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
 
     if (existingRequest) {
@@ -143,8 +138,7 @@ export class GraphqlDataContainer extends LitElement {
         response: updatedResponse,
       };
 
-      // Update the state with the modified data
-      this.graphqlRequests = { // Updated from 'this.data' to 'this.graphqlRequests'
+      this.graphqlRequests = {
         ...this.graphqlRequests,
         [data.requestId]: updatedRequest,
       };
@@ -152,7 +146,6 @@ export class GraphqlDataContainer extends LitElement {
       this.requestUpdate();
     }
   }
-
 
   private parseJwt(token: string): unknown {
     try {
@@ -166,11 +159,12 @@ export class GraphqlDataContainer extends LitElement {
       );
 
       const payload: unknown = JSON.parse(jsonPayload) as unknown;
-      return payload
+      return payload;
     } catch {
       return "Invalid JWT";
     }
   }
+
   render() {
     console.log(
       `filters are: Regex: ${this.filterRegex}, Query: ${this.filterQuery}, Request: ${this.filterRequest}, Response: ${this.filterResponse}`,
@@ -191,19 +185,14 @@ export class GraphqlDataContainer extends LitElement {
     
       const { request, response } = graphqlData;
     
-      // Check if the port is enabled before filtering further
       if (!this.proxyServersEnabled[request.port]) {
         continue; // Skip this request if its port is disabled
       }
     
-      // Destructure the filtering options for clarity
       const { filterRequest, filterResponse } = this;
-    
-      // Type-safe checks for request and response data
       const requestData = request.requestData;
       const responseData = response?.responseData;
     
-      // Handle filtering logic using regex if enabled
       if (regex) {
         const matchesRequest = filterRequest && regex.test(requestData);
         const matchesResponse = filterResponse && responseData ? regex.test(responseData) : false;
@@ -214,34 +203,25 @@ export class GraphqlDataContainer extends LitElement {
         continue;
       }
     
-      // Fallback to simple includes method based on filterRequest and filterResponse flags
       const lowerCaseQuery = this.filterQuery.toLowerCase();
-    
-      // Extract and lowercase the request data for comparison
       const requestDataIncludesQuery = filterRequest &&
         request.requestData.toLowerCase().includes(lowerCaseQuery);
-    
-      // Check if response data exists and includes the query
       const responseDataIncludesQuery = filterResponse &&
         (response?.responseData?.toLowerCase().includes(lowerCaseQuery) ?? false);
     
-      // Return whether the query is found in either the request or response data
       if (requestDataIncludesQuery || responseDataIncludesQuery) {
         filteredIds.push(requestId);
       }
     }
     
-    // Sort the filteredIds in descending order
     filteredIds.sort((a, b) => b - a);
     
-    // Dispatch the event to update the number of requests in memory
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-in-memory", {
         detail: { count: Object.keys(this.graphqlRequests).length }, // Updated from 'this.data' to 'this.graphqlRequests'
       }),
     );
 
-    // Dispatch the event to update the number of requests on display
     eventBus.dispatchEvent(
       new CustomEvent("update-requests-on-display", {
         detail: { count: filteredIds.length },
@@ -250,39 +230,36 @@ export class GraphqlDataContainer extends LitElement {
 
     return html`
       ${repeat(
-      filteredIds,
-      (requestId) => {
-        const { response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
-        return (
-          requestId.toString() +
-          "-" +
-          this.filterQuery +
-          "-" +
-          this.filterRegex.toString() +
-          "-" +
-          (response ? response.responseData.length : 0).toString()
-        );
-      },
-      (requestId) => {
-        const { jwt, request, response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
-
-        const jwtFormatted= JSON.stringify(this.parseJwt(jwt.authorizationHeader), null, 2);
-        const jwtRaw= jwt.authorizationHeader
-        return html`
+        filteredIds,
+        (requestId) => {
+          const { response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+          return (
+            requestId.toString() +
+            "-" +
+            this.filterQuery +
+            "-" +
+            this.filterRegex.toString() +
+            "-" +
+            (response ? response.responseData.length : 0).toString()
+          );
+        },
+        (requestId) => {
+          const { jwtFormatted, jwt, request, response } = this.graphqlRequests[requestId]; // Updated from 'this.data' to 'this.graphqlRequests'
+          return html`
             <graphql-row
               .requestData="${request.requestData || ""}"
               .port="${request.port}"
               .portDescription="${request.portDescription}"
               .responseData="${response?.responseData || ""}"
-              .jwtFormatted="${jwtFormatted}"
-              .jwtRaw="${jwtRaw}"
+              .jwtFormatted="${jwtFormatted}" 
+              .jwtRaw="${jwt.authorizationHeader}"
               .requestId="${requestId}"
               .highlightValue="${this.filterQuery}"
               .isRegex="${this.filterRegex}"
-              >${requestId}-${response?.responseData.length ?? 0}</graphql-row>
+            >${requestId}-${response?.responseData.length ?? 0}</graphql-row>
           `;
-      },
-    )}
+        },
+      )}
     `;
   }
 }
