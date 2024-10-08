@@ -28,8 +28,8 @@ interface GraphQLResponse<T> {
 }
 
 // Load a GraphQL query from a .gql file
-const queryPath = path.join(__dirname, "queries", "getUsers.gql");
-const mutationPath = path.join(__dirname, "mutations", "createUser.gql");
+const queryPath = path.join(__dirname, "..", "queries", "getUsers.gql");
+const mutationPath = path.join(__dirname, "..", "mutations", "createUser.gql");
 
 const getUsersQuery = fs.readFileSync(queryPath, "utf8");
 const createUserMutation = fs.readFileSync(mutationPath, "utf8");

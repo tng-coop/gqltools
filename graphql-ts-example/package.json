@@ -4,8 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node --import './register-loader.js' server.ts",
-    "client": "node --import './register-loader.js' client.ts",
+    "build": "tsc", 
+    "start": "npm run build && node ./dist/server.js",
+    "client": "npm run build && node ./dist/client.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

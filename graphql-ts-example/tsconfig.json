@@ -2,7 +2,7 @@
   "extends": "../tsconfig.json", // Extend the parent config
   "compilerOptions": {
     "rootDir": ".", // Set the root directory for this config
-    "outDir": "../dist" // Output directory for compiled files
+    "outDir": "dist" // Output directory for compiled files
   },
   "include": [
     "*.ts", // Include all TypeScript files in this directory
