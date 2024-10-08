@@ -93,7 +93,7 @@ test("verify initial data loading", async () => {
         name: string;
       }[];
   };
-  console.log(jsonTxt1)
+  // console.log(jsonTxt1)
   expect(json1.username).toBe("admin");
   expect(json2.operationName).toBe("GetUsers");
   expect(json3.users[0].name).toBe("Alice");
