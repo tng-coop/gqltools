@@ -27,6 +27,8 @@ jobs:
       - name: Install Chromium only
         run: npx playwright install chromium  # Install only Chromium browser binaries
 
+      - name: Show Playwright version
+        run: npx playwright --version  # Show Playwright version
 
       # Start Xvfb to run Electron in a virtual display
       - name: Start Xvfb
