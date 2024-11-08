@@ -352,3 +352,24 @@ test("clear all filters to remove all data", async () => {
 
   await expect(window.locator("graphql-row")).toHaveCount(0); // Assuming 'Clear All' clears all rows
 });
+
+
+test("verify state persistence via localStorage", async () => {
+  // Set states and simulate component refresh
+  await window.getByPlaceholder("Enter your filter tag").fill("PersistentTag");
+  await window.getByLabel("Regex").setChecked(true);
+  await window.getByLabel("JWT").setChecked(true);
+  await window.getByLabel("8080").setChecked(false);
+
+  // Reload the page to mimic reinitialization
+  await window.reload();
+
+  // Verify that the states are loaded from localStorage correctly with a case-insensitive comparison
+  const inputValue = await window.getByPlaceholder("Enter your filter tag").inputValue();
+  expect(inputValue.toLowerCase()).toBe("persistenttag");
+
+  // Continue with the rest of the checks
+  await expect(window.getByLabel("Regex")).toBeChecked();
+  await expect(window.getByLabel("JWT")).toBeChecked();
+  await expect(window.getByLabel("8080")).not.toBeChecked();
+});
