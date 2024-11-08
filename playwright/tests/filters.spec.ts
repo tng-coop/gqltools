@@ -384,3 +384,22 @@ test("verify proxy server checkbox interactions", async () => {
   });
   expect(isStoredUnchecked).toBe(true);
 });
+
+test("verify initialization from configuration", async () => {
+  // Simulate loading configuration from the main process
+  const proxyPorts = ["8080", "8081", ];
+  for (const port of proxyPorts) {
+    await expect(window.getByLabel(port)).toBeVisible();
+    await expect(window.getByLabel(port)).toBeChecked(); // Initial state should be checked based on your config
+  }
+});
+
+test("handle special characters in filter tag", async () => {
+  await window.getByPlaceholder("Enter your filter tag").fill(".*[SpecialChars]");
+  await window.getByLabel("Regex").setChecked(true);
+  
+  // Verify that the filter behaves correctly with special characters
+  await expect(window.locator("graphql-row")).toHaveCount(0); // Adjust based on expected data
+});
+
+
