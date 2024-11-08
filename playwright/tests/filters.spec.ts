@@ -373,3 +373,14 @@ test("verify state persistence via localStorage", async () => {
   await expect(window.getByLabel("JWT")).toBeChecked();
   await expect(window.getByLabel("8080")).not.toBeChecked();
 });
+
+test("verify proxy server checkbox interactions", async () => {
+  await window.getByLabel("8080").setChecked(false);
+  await expect(window.getByLabel("8080")).not.toBeChecked();
+
+  // Check if localStorage has been updated
+  const isStoredUnchecked = await window.evaluate(() => {
+    return JSON.parse(localStorage.getItem("proxy-enabled-8080") || "true") === false;
+  });
+  expect(isStoredUnchecked).toBe(true);
+});
