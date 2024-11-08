@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import { graphqlHTTP } from "express-graphql";
+import { createHandler } from "graphql-http/lib/use/express";
 import { buildSchema } from "graphql";
 import jwt, { SignOptions, JwtPayload } from "jsonwebtoken";
 import bodyParser from "body-parser";
@@ -105,14 +105,12 @@ app.use((req: Request, res: Response, next: NextFunction): void => {
   }
 });
 
-// GraphQL endpoint
-app.use("/graphql", (req: Request, res: Response, next: NextFunction): void => {
-  graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
-  })(req, res).catch(next);
-});
+// GraphQL endpoint using graphql-http
+app.use("/graphql", createHandler({
+  schema: schema,
+  rootValue: root,
+
+}));
 
 app.listen(4000, () =>
   console.log("GraphQL server running on http://127.0.0.1:4000/graphql"),
