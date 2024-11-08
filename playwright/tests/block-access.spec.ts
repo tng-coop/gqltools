@@ -8,16 +8,10 @@ import {
 import { execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
-import { homedir } from "os";
-
 
 // Manual definition of __dirname in an ES module environment
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Define the app data directory path (e.g., `~/.config/gqlapps`)
-const appDataDirectory = path.join(homedir(), ".config", "gqlapps");
 
 // Go two levels above the current directory
 const distDirectory = path.resolve(__dirname, "..", "..", "dist");
@@ -32,12 +26,6 @@ let electronApp: ElectronApplication;
 let window: Page;
 
 const startAppWithConfig = async (configPath: string) => {
-  // Delete the app data directory before starting the app
-  if (fs.existsSync(appDataDirectory)) {
-    fs.rmSync(appDataDirectory, { recursive: true, force: true });
-    console.log(`Removed existing app data directory: ${appDataDirectory}`);
-  }
-
   electronApp = await electron.launch({
     args: ["main.js", "--no-sandbox", `--configPath=${configPath}`],
     cwd: distDirectory,

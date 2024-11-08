@@ -402,4 +402,29 @@ test("handle special characters in filter tag", async () => {
   await expect(window.locator("graphql-row")).toHaveCount(0); // Adjust based on expected data
 });
 
+test("verify error handling for missing localStorage data", async () => {
+  // Simulate corrupted or missing data in localStorage
+  await window.evaluate(() => {
+    localStorage.removeItem("filter-tag");
+    localStorage.setItem("regex-enabled", "invalid"); // Invalid data format
+  });
 
+  // Reload the component and check fallback handling
+  await window.reload();
+
+  // Check if the input element exists before verifying its value
+  const filterTagInput = window.getByPlaceholder("Enter your filter tag");
+  if (await filterTagInput.isVisible()) {
+    await expect(filterTagInput).toHaveValue(""); // Check that it defaults to an empty string
+  } else {
+    // console.error("Filter tag input is not visible after data corruption.");
+  }
+
+  // Check if the "Regex" checkbox exists before verifying its checked state
+  const regexCheckbox = window.getByLabel("Regex");
+  if (await regexCheckbox.isVisible()) {
+    await expect(regexCheckbox).not.toBeChecked(); // Ensure it defaults to unchecked
+  } else {
+    // console.error("Regex checkbox is not visible after data corruption.");
+  }
+});

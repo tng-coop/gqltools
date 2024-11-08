@@ -1,13 +1,17 @@
 import { execSync, spawn, ChildProcess } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, join } from "path";
 import * as fs from "fs";
+import { homedir } from "os";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 let graphqlServerProcess: ChildProcess | null = null;
+
+// Define the app data directory path (e.g., `~/.config/gqltools`)
+const appDataDirectory = join(homedir(), ".config", "gqltools");
 
 // Function to check if the GraphQL server is running and responds with 401 Unauthorized
 async function checkGraphQLServerStatus() {
@@ -34,11 +38,17 @@ async function checkGraphQLServerStatus() {
   }
 }
 
-// Global setup function to build the project and start the test server
+// Global setup function to build the project, clean up the app data directory, and start the test server
 export async function globalSetup() {
   const parentDirectory = path.resolve(__dirname, "..");
 
   try {
+    // Clean up the app data directory
+    if (fs.existsSync(appDataDirectory)) {
+      fs.rmSync(appDataDirectory, { recursive: true, force: true });
+      console.log(`Removed existing app data directory: ${appDataDirectory}`);
+    }
+
     // Compile TypeScript
     execSync("npm run build", { cwd: parentDirectory, stdio: "ignore" });
 
