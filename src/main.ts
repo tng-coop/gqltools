@@ -8,6 +8,12 @@ import { startProxyServers } from "./proxyServer.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Set the name of the app to ensure the userData directory is correctly named
+app.name = "gqltools"; // This sets the directory name in `~/.config`, `AppData`, etc., based on the platform
+
+// Customize the `userData` path before the app is ready
+app.setPath('userData', join(app.getPath('appData'), app.name));
+
 // Function to parse command-line arguments
 function getConfigPathFromArgs(): string | null {
   const args = process.argv.slice(1);
