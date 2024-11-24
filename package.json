@@ -24,7 +24,7 @@
     "electron": "^33.2.0",
     "electron-reload": "^2.0.0-alpha.1",
     "express": "^4.21.1",
-    "graphql-http": "^1.22.2",
+    "graphql-http": "^1.22.3",
     "http-proxy-agent": "^7.0.2",
     "jsonwebtoken": "^9.0.2",
     "lit": "^3.2.1",
@@ -40,7 +40,7 @@
     "@rollup/plugin-typescript": "^12.1.1",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.9.0",
+    "@types/node": "^22.9.3",
     "@types/prismjs": "^1.26.5",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
@@ -53,13 +53,13 @@
     "eslint-plugin-prettier": "^5.2.1",
     "playwright": "^1.49.0",
     "prettier": "^3.3.3",
-    "rollup": "^4.27.3",
+    "rollup": "^4.27.4",
     "rollup-plugin-esbuild": "^6.1.1",
     "rollup-plugin-execute": "^1.1.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   }
 }
